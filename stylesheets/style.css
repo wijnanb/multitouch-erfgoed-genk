@@ -63,7 +63,155 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   display: block;
 }
 
-/* line 9, ../sass/style.sass */
+/* line 1, ../sass/folder.sass */
+#folders {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+}
+
+/* line 8, ../sass/folder.sass */
+.box, .row {
+  -webkit-transition: all 600ms ease-in-out 0.2s;
+  -webkit-backface-visibility: hidden;
+  -webkit-transform-origin: left top;
+  -webkit-transform-style: preserve-3d;
+}
+
+/* line 14, ../sass/folder.sass */
+.folder {
+  -webkit-transition: all 600ms ease-in-out 0.2s;
+  -webkit-perspective: 1200;
+  -webkit-perspective-origin-x: center;
+  -webkit-perspective-origin-y: center;
+  -webkit-backface-visibility: hidden;
+  -webkit-transform-origin: left top;
+  -webkit-transform-style: preserve-3d;
+}
+
+/* line 23, ../sass/folder.sass */
+.row {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+/* line 28, ../sass/folder.sass */
+.row-0 {
+  top: 200px;
+}
+
+/* line 30, ../sass/folder.sass */
+.row-1down, .row-2down, .row-3down {
+  -webkit-transform: translate3d(0px, 200px, 0px);
+  -webkit-transform-origin: left top;
+}
+
+/* line 33, ../sass/folder.sass */
+.row-1up, .row-2up, .row-3up {
+  -webkit-transform: translate3d(0px, -200px, 0px);
+  -webkit-transform-origin: left bottom;
+}
+
+/* line 37, ../sass/folder.sass */
+.level1, .level2, .level3, .level4, .level5, .level6, .level7 {
+  -webkit-transform: translate3d(200px, 0px, 0px);
+}
+
+/* line 40, ../sass/folder.sass */
+.box {
+  height: 200px;
+  position: relative;
+  top: 0px;
+  left: 0px;
+  z-index: 0;
+}
+
+/* line 46, ../sass/folder.sass */
+.content {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  -webkit-transition: all 600ms ease-in-out 0.2s;
+  -webkit-backface-visibility: hidden;
+  -webkit-transform-origin: left top;
+  -webkit-transform-style: preserve-3d;
+  border: 1px solid grey;
+}
+/* line 58, ../sass/folder.sass */
+.content .inner {
+  position: absolute;
+  -webkit-backface-visibility: hidden;
+  -webkit-transform-origin: left top;
+  -webkit-transform-style: preserve-3d;
+}
+
+/* line 64, ../sass/folder.sass */
+#box-0-0 > .content .inner {
+  -webkit-transform: translate3d(0px, 0px, 0px);
+}
+
+/* line 67, ../sass/folder.sass */
+#box-1-0 > .content .inner {
+  -webkit-transform: translate3d(-200px, 0px, 0px);
+}
+
+/* line 70, ../sass/folder.sass */
+#box-2-0 > .content .inner {
+  -webkit-transform: translate3d(-400px, 0px, 0px);
+}
+
+/* line 73, ../sass/folder.sass */
+#box-3-0 > .content .inner {
+  -webkit-transform: translate3d(-600px, 0px, 0px);
+}
+
+/* line 76, ../sass/folder.sass */
+#box-0-1 > .content .inner {
+  -webkit-transform: translate3d(0px, -200px, 0px);
+}
+
+/* line 79, ../sass/folder.sass */
+#box-1-1 > .content .inner {
+  -webkit-transform: translate3d(-200px, -200px, 0px);
+}
+
+/* line 82, ../sass/folder.sass */
+#box-2-1 > .content .inner {
+  -webkit-transform: translate3d(-400px, -200px, 0px);
+}
+
+/* line 85, ../sass/folder.sass */
+#box-3-1 > .content .inner {
+  -webkit-transform: translate3d(-600px, -200px, 0px);
+}
+
+/* line 88, ../sass/folder.sass */
+#box-0-2 > .content .inner {
+  -webkit-transform: translate3d(0px, -400px, 0px);
+}
+
+/* line 91, ../sass/folder.sass */
+#box-1-2 > .content .inner {
+  -webkit-transform: translate3d(-200px, -400px, 0px);
+}
+
+/* line 94, ../sass/folder.sass */
+#box-2-2 > .content .inner {
+  -webkit-transform: translate3d(-400px, -400px, 0px);
+}
+
+/* line 97, ../sass/folder.sass */
+#box-3-2 > .content .inner {
+  -webkit-transform: translate3d(-600px, -400px, 0px);
+}
+
+/* line 10, ../sass/style.sass */
 body {
   background-color: white;
   font-family: "Helvetica Neue", Helvetica, Arial;
@@ -72,7 +220,7 @@ body {
   color: white;
 }
 
-/* line 16, ../sass/style.sass */
+/* line 17, ../sass/style.sass */
 #page {
   background-color: black;
   position: absolute;
@@ -83,7 +231,7 @@ body {
   overflow: hidden;
 }
 
-/* line 25, ../sass/style.sass */
+/* line 26, ../sass/style.sass */
 .block {
   width: 200px;
   height: 200px;
@@ -93,14 +241,15 @@ body {
   overflow: hidden;
   margin: 5px;
 }
-/* line 33, ../sass/style.sass */
+/* line 34, ../sass/style.sass */
 .block .inner {
   background-color: black;
   background-image: url(../images/content/example_block.jpg);
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
-/* line 38, ../sass/style.sass */
+/* line 40, ../sass/style.sass */
 .block .inner .label {
   background-color: #8c3b3b;
   position: absolute;
@@ -110,13 +259,72 @@ body {
   text-align: right;
   padding: 10px;
 }
-/* line 46, ../sass/style.sass */
+/* line 48, ../sass/style.sass */
 .block .inner .label .date {
   color: #ab6937;
 }
-/* line 48, ../sass/style.sass */
+/* line 50, ../sass/style.sass */
 .block .inner .label h2 {
   color: white;
   font-size: 16px;
   line-height: 19px;
+}
+
+/* line 55, ../sass/style.sass */
+.folder {
+  position: absolute;
+  left: 300px;
+  top: 20px;
+}
+/* line 60, ../sass/style.sass */
+.folder .inner .photo {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 400px;
+  border: 10px solid white;
+}
+/* line 66, ../sass/style.sass */
+.folder .inner .photo img {
+  width: 100%;
+}
+/* line 68, ../sass/style.sass */
+.folder .inner .details {
+  position: absolute;
+  top: 330px;
+  left: 20px;
+}
+/* line 72, ../sass/style.sass */
+.folder .inner .details h1 {
+  position: absolute;
+  background-color: #ab6937;
+  z-index: 1;
+  color: black;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: bold;
+  padding: 6px 8px;
+  width: 300px;
+}
+/* line 83, ../sass/style.sass */
+.folder .inner .details .description {
+  position: absolute;
+  background-color: white;
+  color: black;
+  font-size: 11px;
+  line-height: 13px;
+  left: 50px;
+  top: -10px;
+  padding: 80px 10px 20px;
+  width: 450px;
+  height: 160px;
+}
+/* line 94, ../sass/style.sass */
+.folder .inner .details .date {
+  position: absolute;
+  top: 225px;
+  color: #ab6937;
+  text-align: right;
+  width: 450px;
+  left: 50px;
 }

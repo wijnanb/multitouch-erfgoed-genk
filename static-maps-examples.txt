@@ -1,0 +1,8 @@
+
+
+http://maps.googleapis.com/maps/api/staticmap?center=50.975697,5.48501&zoom=15&size=640x640&sensor=false&maptype=satellite
+
+
+
+
+https://maps.google.com/maps?q=winterslag&hl=en&ll=50.975697,5.48501&spn=0.016267,0.045447&sll=50.978545,5.356151&sspn=0.008133,0.022724&hnear=Winterslag+Genk,+Limburg,+Flemish+Region,+Belgium&t=m&z=15&iwloc=A

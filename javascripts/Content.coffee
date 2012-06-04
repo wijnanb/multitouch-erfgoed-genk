@@ -8,6 +8,7 @@ class Content extends Backbone.Model
 			object: "Object"
 			collection: "Collectie"
 			material: "Materiaal"
+		location:	
 			longitude: 50.0
 			lattitude: 4.5
 			zoom: 14	

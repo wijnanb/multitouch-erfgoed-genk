@@ -1,0 +1,98 @@
+#folders
+	position: absolute
+	top: 0px
+	left: 0px
+	right: 0px
+	bottom: 0px
+
+.box, .row
+	-webkit-transition: all 600ms ease-in-out 0.2s
+	-webkit-backface-visibility: hidden
+	-webkit-transform-origin: left top
+	-webkit-transform-style: preserve-3d
+
+.folder
+	-webkit-transition: all 600ms ease-in-out 0.2s
+	-webkit-perspective: 1200
+	-webkit-perspective-origin-x: center
+	-webkit-perspective-origin-y: center
+	-webkit-backface-visibility: hidden
+	-webkit-transform-origin: left top
+	-webkit-transform-style: preserve-3d
+
+.row
+	position: absolute
+	top: 0px
+	left: 0px
+
+.row-0
+	top: 200px
+.row-1down, .row-2down, .row-3down
+	-webkit-transform: translate3d(0px,200px,0px)
+	-webkit-transform-origin: left top
+.row-1up, .row-2up, .row-3up
+	-webkit-transform: translate3d(0px,-200px,0px)
+	-webkit-transform-origin: left bottom
+
+.level1, .level2, .level3, .level4, .level5, .level6, .level7
+	-webkit-transform: translate3d(200px,0px,0px)
+
+.box
+	height: 200px
+	position: relative
+	top: 0px
+	left: 0px
+	z-index: 0
+.content
+	position: absolute
+	top: 0px
+	left: 0px
+	width: 200px
+	height: 200px
+	overflow: hidden
+	-webkit-transition: all 600ms ease-in-out 0.2s
+	-webkit-backface-visibility: hidden
+	-webkit-transform-origin: left top
+	-webkit-transform-style: preserve-3d
+	border: 1px solid grey
+	.inner
+		position: absolute
+		-webkit-backface-visibility: hidden
+		-webkit-transform-origin: left top
+		-webkit-transform-style: preserve-3d
+
+#box-0-0 > .content .inner
+	-webkit-transform: translate3d(0px,0px,0px)
+
+#box-1-0 > .content .inner
+	-webkit-transform: translate3d(-200px,0px,0px)
+
+#box-2-0 > .content .inner
+	-webkit-transform: translate3d(-400px,0px,0px)
+
+#box-3-0 > .content .inner
+	-webkit-transform: translate3d(-600px,0px,0px)
+
+#box-0-1 > .content .inner
+	-webkit-transform: translate3d(0px,-200px,0px)
+
+#box-1-1 > .content .inner
+	-webkit-transform: translate3d(-200px,-200px,0px)
+
+#box-2-1 > .content .inner
+	-webkit-transform: translate3d(-400px,-200px,0px)
+
+#box-3-1 > .content .inner
+	-webkit-transform: translate3d(-600px,-200px,0px)
+
+#box-0-2 > .content .inner
+	-webkit-transform: translate3d(0px,-400px,0px)
+
+#box-1-2 > .content .inner
+	-webkit-transform: translate3d(-200px,-400px,0px)
+
+#box-2-2 > .content .inner
+	-webkit-transform: translate3d(-400px,-400px,0px)
+
+#box-3-2 > .content .inner
+	-webkit-transform: translate3d(-600px,-400px,0px)

@@ -12,8 +12,29 @@
       return Folder.__super__.constructor.apply(this, arguments);
     }
 
+    Folder.prototype.defaults = {
+      template: "default",
+      folded: false,
+      vertical: 0,
+      horizontal: 15
+    };
+
     Folder.prototype.initialize = function() {
       return console.log("Folder.initialize");
+    };
+
+    Folder.prototype.mapURL = function() {
+      var center, zoom;
+      center = this.get("content").get("location").longitude + "," + this.get("content").get("location").lattitude;
+      zoom = this.get("content").get("location").zoom;
+      "http://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + zoom + "&size=640x640&sensor=false&maptype=satellite";
+      return "images/content/example_map.png";
+    };
+
+    Folder.prototype.toggle = function() {
+      return this.set({
+        "folded": !this.get("folded")
+      });
     };
 
     return Folder;
@@ -30,8 +51,11 @@
 
     FolderView.prototype.className = "folder";
 
+    FolderView.prototype.div_structure = "<div class=\"row row-0\"><div class=\"row row-1up\"><div class=\"box level0\" id=\"box-0-0\"><div class=\"content\"></div><div class=\"box level1\" id=\"box-1-0\"><div class=\"content\"></div><div class=\"box level2\" id=\"box-2-0\"><div class=\"content\"></div><div class=\"box level3\" id=\"box-3-0\"><div class=\"content\"></div></div></div></div></div></div><div class=\"box level0\" id=\"box-0-1\"><div class=\"content\"></div><div class=\"box level1\" id=\"box-1-1\"><div class=\"content\"></div><div class=\"box level2\" id=\"box-2-1\"><div class=\"content\"></div><div class=\"box level3\" id=\"box-3-1\"><div class=\"content\"></div></div></div></div></div><div class=\"row row-1down\"><div class=\"box level0\" id=\"box-0-2\"><div class=\"content\"></div><div class=\"box level1\" id=\"box-1-2\"><div class=\"content\"></div><div class=\"box level2\" id=\"box-2-2\"><div class=\"content\"></div><div class=\"box level3\" id=\"box-3-2\"><div class=\"content\"></div></div></div></div></div></div></div>";
+
     FolderView.prototype.initialize = function() {
-      return console.log("FolderView.initialize");
+      console.log("FolderView.initialize");
+      return this.model.on("change:folded", this.toggle, this);
     };
 
     FolderView.prototype.events = {
@@ -39,15 +63,67 @@
     };
 
     FolderView.prototype.click = function() {
-      return console.log("FolderView.click");
+      console.log("FolderView.click");
+      return this.model.toggle();
+    };
+
+    FolderView.prototype.build = function() {
+      var contents, date, description, title;
+      console.log("FolderView.build");
+      this.$el.html(this.div_structure);
+      title = this.model.get('content').get('title');
+      description = this.model.get('content').get('description');
+      date = this.model.get('content').niceDate();
+      contents = $("<div class=\"inner\">\n	<div class=\"map\"><img src=\"" + (this.model.mapURL()) + "\" width=\"800\" height=\"800\"/></div>\n	<div class=\"fiche\"></div>\n	<div class=\"photo\"><img src=\"" + (this.model.get('content').get('photo')) + "\"/></div>\n	<div class=\"details\">\n		<h1>" + title + "</h1>\n		<div class=\"description\">" + description + "</div>\n		<div class=\"date\">" + date + "</div>\n	</div>\n	<div class=\"related\"></div>\n</div>");
+      contents.addClass("template-" + this.model.get("template"));
+      return this.$el.find(".content").each(function(index, item) {
+        return $(item).append(contents.clone());
+      });
     };
 
     FolderView.prototype.render = function() {
-      var date, title;
-      title = this.model.get('content').get('title');
-      date = this.model.get('content').niceDate();
-      this.$el.html("<h2>" + title + "</h2>\n<div class=\"date\">" + date + "</div>");
+      console.log("FolderView.render");
+      this.build();
+      this.toggle();
       return this;
+    };
+
+    FolderView.prototype.toggle = function() {
+      if (this.model.get("folded")) {
+        this.openHorizontal(180);
+        return this.openVertical(180, 800);
+      } else {
+        this.openVertical(0);
+        return this.openHorizontal(15, 800);
+      }
+    };
+
+    FolderView.prototype.openVertical = function(value, delay) {
+      if (delay == null) {
+        delay = 200;
+      }
+      this.$el.find(".row").css("-webkit-transition-delay", delay + "ms");
+      this.$el.find(".row-1up, .row-2up, .row-3up").css("-webkit-transform", "translate3d(0px,-200px,0px) rotate3d(0,0,1," + value + "deg)");
+      return this.$el.find(".row-1down, .row-2down, row-3down").css("-webkit-transform", "translate3d(0px,200px,0px) rotate3d(0,0,1,-" + value + "deg)");
+    };
+
+    FolderView.prototype.openHorizontal = function(value, delay) {
+      var half_value, middle;
+      if (delay == null) {
+        delay = 200;
+      }
+      this.$el.find(".folder, .box").css("-webkit-transition-delay", delay + "ms");
+      middle = (4 - 1) * 200 / 2 * (value / 180);
+      value = Math.min(value, 179);
+      half_value = value / 2;
+      this.$el.find(".level0").css("-webkit-transform", "rotate3d(0,1,0,-" + half_value + "deg)");
+      this.$el.find(".level2, .level4, .level6").css("-webkit-transform", "translate3d(200px,0px,0px) rotate3d(0,1,0,-" + value + "deg)");
+      this.$el.find(".level1, .level3, .level5, .level7").css("-webkit-transform", "translate3d(200px,0px,0px) rotate3d(0,1,0," + value + "deg)");
+      if (value >= 140) {
+        return this.$el.css("-webkit-transform", "translate3d(" + middle + "px,0px,0px) rotate3d(0,1,0," + half_value + "deg)");
+      } else {
+        return this.$el.css("-webkit-transform", "translate3d(" + middle + "px,0px,0px) rotate3d(0,1,0,0deg)");
+      }
     };
 
     return FolderView;
