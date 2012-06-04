@@ -6,10 +6,12 @@ See http://compass-style.org and coffeescript.org for installation instructions.
 Compile your compass files automatically when a file is changed
 ```
 compass watch
+```
 
 Compile your coffee-script files to javascript (in the javascripts/ folder)
 ```
 coffee -c -w *.coffee
+```
 
 ## Backbone.js
 
