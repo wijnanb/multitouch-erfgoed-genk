@@ -15,4 +15,4 @@ coffee -c -w *.coffee
 
 # Backbone.js
 
-This application uses Backbone.js for structuring the project in a MVC way.  See http://backbonejs.org for more information and documentation.
+Backbone.js was used for structuring the project in a MVC way.  See http://backbonejs.org for more information and documentation.
