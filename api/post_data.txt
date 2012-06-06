@@ -1,0 +1,1 @@
+{title:"Title",date:"1970-06-6",description:"Lorem ipsum dolor sit amet...",fiche:{object:"Object",collection:"Collectie",material:"Materiaal"},location:{longitude:50.0,lattitude:4.5,zoom:14}}

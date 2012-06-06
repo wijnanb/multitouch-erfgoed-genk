@@ -30,5 +30,16 @@ class BlockView extends Backbone.View
 
 		this
 
+class BlockCollection extends Backbone.Collection
+	model: Block
+
+	initialize: () ->
+		this.fetch()
+
 window.Block = Block
 window.BlockView = BlockView
+window.BlockCollection = BlockCollection
+
+
+
+

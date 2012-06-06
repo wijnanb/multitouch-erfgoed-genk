@@ -1,4 +1,4 @@
-#Compilation
+# Compilation
 
 This project uses Compass and Coffee-script to make coding easier and safer to syntax mistakes.
 See <http://compass-style.org> and <http://coffeescript.org> for installation instructions.

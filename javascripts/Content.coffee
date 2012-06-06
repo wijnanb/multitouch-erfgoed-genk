@@ -20,4 +20,13 @@ class Content extends Backbone.Model
 		months = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
 		this.get('date').getDate() + " " + months[this.get('date').getMonth()] + " " + this.get('date').getFullYear()
 
+
+class ContentCollection extends Backbone.Collection
+	model: Content
+	url: config.host + "api/content"
+
+	initialize: () ->
+		this.fetch()
+
 window.Content = Content
+window.ContentCollection = ContentCollection

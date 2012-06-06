@@ -4,11 +4,12 @@
 
   App = (function() {
     return $(function($) {
-      var wielerlegende;
-      wielerlegende = new Content({
-        title: "Accordeonspelers winnen Europees kampioenschap",
-        date: new Date("1970-9-25"),
-        description: "A procession of Brahmins is coming this way. We must prevent their seeing us, if possible. The guide unloosed the elephant and led him into a thicket, at the same time asking the travellers not to stir. He held himself ready to bestride the animal at a moment's notice, should flight become necessary; but he evidently thought that the procession of the faithful would pass without perceiving them amid the thick foliage, in which they were wholly concealed. The discordant tones of the voices and instruments drew nearer, and now droning songs mingled with the sound of the tambourines and cymbals. The head of the procession soon appeared beneath the trees, a hundred paces away; and the strange figures who performed.",
+      var block, contentCollection, folder;
+      contentCollection = new ContentCollection();
+      contentCollection.create({
+        title: "Title",
+        date: new Date("1981-06-07"),
+        description: "A procession of Brahmins is coming this way. We must prevent their seeing us, if possible. \nThe guide unloosed the elephant and led him into a thicket, at the same time asking the travellers not to stir. \nHe held himself ready to bestride the animal at a moment's notice, should flight become necessary; but he evidently \nthought that the procession of the faithful would pass without perceiving them amid the thick foliage, in which they \nwere wholly concealed. The discordant tones of the voices and instruments drew nearer, and now droning songs mingled \nwith the sound of the tambourines and cymbals. The head of the procession soon appeared beneath the trees, a hundred \npaces away; and the strange figures who performed.",
         photo: "images/content/example_photo.jpg",
         location: {
           longitude: 50.975697,
@@ -16,21 +17,25 @@
           zoom: 15
         },
         fiche: {
-          material: "Prentkaart"
+          material: "Papier",
+          object: "Prentkaart"
         }
       });
-      window.bv = new BlockView({
+      block = new BlockView({
         model: new Block({
-          content: wielerlegende
+          content: contentCollection.first()
         })
       });
-      bv.render().$el.appendTo($("#blocks"));
-      window.fv = new FolderView({
+      block.render().$el.appendTo($("#blocks"));
+      folder = new FolderView({
         model: new Folder({
-          content: wielerlegende
+          content: contentCollection.first()
         })
       });
-      return fv.render().$el.appendTo($("#folders"));
+      folder.render().$el.appendTo($("#folders"));
+      window.block = block;
+      window.folder = folder;
+      return window.contentCollection = contentCollection;
     });
   })();
 

@@ -297,7 +297,7 @@ body {
 /* line 72, ../sass/style.sass */
 .folder .inner .details h1 {
   position: absolute;
-  background-color: #ab6937;
+  background-color: rgba(171, 105, 55, 0.6);
   z-index: 1;
   color: black;
   font-size: 20px;
@@ -306,7 +306,7 @@ body {
   padding: 6px 8px;
   width: 300px;
 }
-/* line 83, ../sass/style.sass */
+/* line 82, ../sass/style.sass */
 .folder .inner .details .description {
   position: absolute;
   background-color: white;
@@ -319,7 +319,7 @@ body {
   width: 450px;
   height: 160px;
 }
-/* line 94, ../sass/style.sass */
+/* line 93, ../sass/style.sass */
 .folder .inner .details .date {
   position: absolute;
   top: 225px;
