@@ -12,6 +12,13 @@
       return Block.__super__.constructor.apply(this, arguments);
     }
 
+    Block.prototype.defaults = {
+      position: {
+        x: 0,
+        y: 0
+      }
+    };
+
     Block.prototype.initialize = function() {
       return console.log("Block.initialize");
     };
@@ -19,40 +26,6 @@
     return Block;
 
   })(Backbone.Model);
-
-  BlockView = (function(_super) {
-
-    __extends(BlockView, _super);
-
-    function BlockView() {
-      return BlockView.__super__.constructor.apply(this, arguments);
-    }
-
-    BlockView.prototype.className = "block";
-
-    BlockView.prototype.initialize = function() {
-      return console.log("BlockView.initialize");
-    };
-
-    BlockView.prototype.events = {
-      "click": "click"
-    };
-
-    BlockView.prototype.click = function() {
-      return console.log("BlockView.click");
-    };
-
-    BlockView.prototype.render = function() {
-      var date, title;
-      title = this.model.get('content').get('title');
-      date = this.model.get('content').niceDate();
-      this.$el.html("<div class=\"inner\">\n	<div class=\"label\">\n		<div class=\"date\">" + date + "</div>\n		<h2>" + title + "</h2>\n	</div>\n</div>");
-      return this;
-    };
-
-    return BlockView;
-
-  })(Backbone.View);
 
   BlockCollection = (function(_super) {
 
@@ -65,12 +38,92 @@
     BlockCollection.prototype.model = Block;
 
     BlockCollection.prototype.initialize = function() {
-      return this.fetch();
+      this.contentCollection = new ContentCollection();
+      return this.contentCollection.bind("reset", this.reset, this);
+    };
+
+    BlockCollection.prototype.reset = function() {
+      console.log("BlockCollection.reset");
+      return this.contentCollection.each(function(element, index, list) {
+        var attributes, block, num_block_x;
+        console.log(index + ": " + element.get("title"));
+        num_block_x = Math.floor(config.screen_width / config.block.width);
+        attributes = {
+          content: element,
+          position: {
+            x: index % num_block_x,
+            y: Math.floor(index / num_block_x)
+          }
+        };
+        block = new BlockView({
+          model: new Block(attributes)
+        });
+        return block.render().$el.appendTo($("#blocks"));
+      });
     };
 
     return BlockCollection;
 
   })(Backbone.Collection);
+
+  BlockView = (function(_super) {
+
+    __extends(BlockView, _super);
+
+    function BlockView() {
+      return BlockView.__super__.constructor.apply(this, arguments);
+    }
+
+    BlockView.prototype.className = "block";
+
+    BlockView.prototype.initialize = function() {
+      var hammer;
+      console.log("BlockView.initialize");
+      _.bindAll(this);
+      hammer = new Hammer(this.el, {
+        drag_min_distance: 0,
+        drag_horizontal: true,
+        drag_vertical: true,
+        transform: false,
+        hold: false,
+        prevent_default: true
+      });
+      hammer.ontap = this.ontap;
+      hammer.ondragstart = this.ondragstart;
+      hammer.ondrag = this.ondrag;
+      hammer.ondragend = this.ondragend;
+      return this;
+    };
+
+    BlockView.prototype.ontap = function() {
+      return console.log("tap", this);
+    };
+
+    BlockView.prototype.ondragstart = function() {
+      return console.log("dragstart", this);
+    };
+
+    BlockView.prototype.ondrag = function() {
+      return console.log("drag", this);
+    };
+
+    BlockView.prototype.ondragend = function() {
+      return console.log("dragend", this);
+    };
+
+    BlockView.prototype.render = function() {
+      var date, title;
+      title = this.model.get('content').get('title');
+      date = this.model.get('content').niceDate();
+      this.$el.html("<div class=\"inner\">\n	<div class=\"label\">\n		<div class=\"date\">" + date + "</div>\n		<h2>" + title + "</h2>\n	</div>\n</div>");
+      this.$el.css("left", this.model.get('position').x * config.block.width + "px");
+      this.$el.css("top", this.model.get('position').y * config.block.height + "px");
+      return this;
+    };
+
+    return BlockView;
+
+  })(Backbone.View);
 
   window.Block = Block;
 

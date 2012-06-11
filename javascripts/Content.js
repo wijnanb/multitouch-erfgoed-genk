@@ -14,7 +14,7 @@
 
     Content.prototype.defaults = {
       title: "Title",
-      date: Date.now(),
+      date: "1982-05-06",
       description: "Lorem ipsum dolor sit amet...",
       fiche: {
         title: "Titel",
@@ -35,8 +35,9 @@
 
     Content.prototype.niceDate = function() {
       var months;
+      var date = new Date(this.get('date'))
       months = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
-      return this.get('date').getDate() + " " + months[this.get('date').getMonth()] + " " + this.get('date').getFullYear();
+      return date.getDate() + " " + months[date.getMonth()] + " " + date.getFullYear();
     };
 
     return Content;
