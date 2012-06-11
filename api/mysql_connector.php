@@ -27,7 +27,8 @@ switch($request->getMethod())
 				$output->error = mysql_error();
 				RestUtils::sendResponse(500, json_encode($output), 'application/json');
 			} else {
-				$output = mysql_fetch_object($result);
+				$object = mysql_fetch_object($result);
+				$output = json_decode($object->data);
 				RestUtils::sendResponse(200, json_encode($output), 'application/json');
 			}
 		} else {
@@ -42,7 +43,7 @@ switch($request->getMethod())
 			} else {
 				$output = array();
 				while( $row = mysql_fetch_object($result) ) {
-					array_push( $output, $row );
+					array_push( $output, json_decode($row->data) );
 				}
 				RestUtils::sendResponse(200, json_encode($output), 'application/json');
 			}

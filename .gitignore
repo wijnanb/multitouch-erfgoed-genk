@@ -2,3 +2,4 @@
 .sass-cache/
 api/db_connection.php
 api/logs/*
+api/error_log.txt
