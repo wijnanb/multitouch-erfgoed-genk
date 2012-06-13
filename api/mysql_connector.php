@@ -27,9 +27,10 @@ switch($request->getMethod())
 				$output->error = mysql_error();
 				RestUtils::sendResponse(500, json_encode($output), 'application/json');
 			} else {
-				$object = mysql_fetch_object($result);
-				$output = json_decode($object->data);
-				RestUtils::sendResponse(200, json_encode($output), 'application/json');
+				$row = mysql_fetch_object($result);
+				$object = json_decode($row->data);
+				$object->id = $row->id;
+				RestUtils::sendResponse(200, json_encode($object), 'application/json');
 			}
 		} else {
 			$query = "SELECT * FROM $table ORDER BY position ASC, id ASC";
@@ -43,7 +44,9 @@ switch($request->getMethod())
 			} else {
 				$output = array();
 				while( $row = mysql_fetch_object($result) ) {
-					array_push( $output, json_decode($row->data) );
+					$object = json_decode($row->data);
+					$object->id = $row->id;
+					array_push( $output, $object );
 				}
 				RestUtils::sendResponse(200, json_encode($output), 'application/json');
 			}
