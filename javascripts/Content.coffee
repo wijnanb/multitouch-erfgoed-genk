@@ -14,11 +14,12 @@ class Content extends Backbone.Model
 			zoom: 14	
 
 	initialize: () ->
-		console.log "Content.initialize", this.get('title'), this.niceDate()
+		this.set "title": this.id + " " + this.get('title')
 
 	niceDate: () ->
+		date = new Date this.get('date')
 		months = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
-		this.get('date').getDate() + " " + months[this.get('date').getMonth()] + " " + this.get('date').getFullYear()
+		date.getDate() + " " + months[date.getMonth()] + " " + date.getFullYear()
 
 
 class ContentCollection extends Backbone.Collection

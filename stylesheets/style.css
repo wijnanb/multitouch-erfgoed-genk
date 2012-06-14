@@ -232,6 +232,13 @@ body {
 }
 
 /* line 26, ../sass/style.sass */
+#blocks {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+/* line 31, ../sass/style.sass */
 .block {
   width: 200px;
   height: 200px;
@@ -240,8 +247,13 @@ body {
   padding: 2px;
   overflow: hidden;
   margin: 5px;
+  z-index: 1;
 }
-/* line 34, ../sass/style.sass */
+/* line 40, ../sass/style.sass */
+.block.active {
+  background-color: yellow;
+}
+/* line 42, ../sass/style.sass */
 .block .inner {
   background-color: black;
   background-image: url(../images/content/example_block.jpg);
@@ -249,7 +261,7 @@ body {
   height: 100%;
   overflow: hidden;
 }
-/* line 40, ../sass/style.sass */
+/* line 48, ../sass/style.sass */
 .block .inner .label {
   background-color: #8c3b3b;
   position: absolute;
@@ -259,24 +271,24 @@ body {
   text-align: right;
   padding: 10px;
 }
-/* line 48, ../sass/style.sass */
+/* line 56, ../sass/style.sass */
 .block .inner .label .date {
   color: #ab6937;
 }
-/* line 50, ../sass/style.sass */
+/* line 58, ../sass/style.sass */
 .block .inner .label h2 {
   color: white;
   font-size: 16px;
   line-height: 19px;
 }
 
-/* line 55, ../sass/style.sass */
+/* line 63, ../sass/style.sass */
 .folder {
   position: absolute;
   left: 300px;
   top: 20px;
 }
-/* line 60, ../sass/style.sass */
+/* line 68, ../sass/style.sass */
 .folder .inner .photo {
   position: absolute;
   top: 20px;
@@ -284,17 +296,17 @@ body {
   width: 400px;
   border: 10px solid white;
 }
-/* line 66, ../sass/style.sass */
+/* line 74, ../sass/style.sass */
 .folder .inner .photo img {
   width: 100%;
 }
-/* line 68, ../sass/style.sass */
+/* line 76, ../sass/style.sass */
 .folder .inner .details {
   position: absolute;
   top: 330px;
   left: 20px;
 }
-/* line 72, ../sass/style.sass */
+/* line 80, ../sass/style.sass */
 .folder .inner .details h1 {
   position: absolute;
   background-color: rgba(171, 105, 55, 0.6);
@@ -306,7 +318,7 @@ body {
   padding: 6px 8px;
   width: 300px;
 }
-/* line 82, ../sass/style.sass */
+/* line 90, ../sass/style.sass */
 .folder .inner .details .description {
   position: absolute;
   background-color: white;
@@ -319,7 +331,7 @@ body {
   width: 450px;
   height: 160px;
 }
-/* line 93, ../sass/style.sass */
+/* line 101, ../sass/style.sass */
 .folder .inner .details .date {
   position: absolute;
   top: 225px;

@@ -3,28 +3,45 @@ class Block extends Backbone.Model
 		position:
 			x: 0
 			y: 0
+		drag_offset:
+			x: 0
+			y: 0
+		active: false
+		isDragging: false
 	initialize: () ->
-		console.log "Block.initialize"
+	
+	positionOnGrid: () ->
+		pixel_position = 
+			x: this.get("position").x * config.block.width + this.get("drag_offset").x
+			y: this.get("position").y * config.block.height + this.get("drag_offset").y
+
+		pixel_position.x = Math.max 0, Math.min( pixel_position.x, config.screen_width )
+		pixel_position.y = Math.max 0, Math.min( pixel_position.y, config.screen_height )
+
+		this.set "position" :
+			x: Math.round pixel_position.x / config.block.width
+			y: Math.round pixel_position.y / config.block.height
+
+		this.set "drag_offset": { x:0, y:0 }, silent: true
 
 class BlockCollection extends Backbone.Collection
 	model: Block
-
+	
 	initialize: () ->
 		this.contentCollection = new ContentCollection()
 		this.contentCollection.bind "reset", this.reset, this
 
 	reset: () ->
-		console.log "BlockCollection.reset"
 		this.contentCollection.each (element,index,list) ->
-			console.log index + ": " + element.get("title")
 
-			num_block_x = Math.floor config.screen_width / config.block.width
-			
+			this.num_block_x = Math.floor config.screen_width / config.block.width
+			this.num_block_y = Math.floor config.screen_height / config.block.height
+
 			attributes = 
 				content: element
 				position:
-					x: index % num_block_x
-					y: Math.floor index / num_block_x
+					x: index % this.num_block_x
+					y: Math.floor index / this.num_block_x
 
 			block = new BlockView( model: new Block( attributes ) )
 			block.render().$el.appendTo $("#blocks")
@@ -36,35 +53,62 @@ class BlockView extends Backbone.View
 	className: "block"
 	
 	initialize: () ->
-		console.log "BlockView.initialize"
+		_.bindAll this 
+		this.model.bind "change:active", this.toggleActive
+		this.model.bind "change:drag_offset", this.move
+		this.model.bind "change:position", this.move
+		this.model.bind "change:isDragging", this.toggleZIndex
 
-		_.bindAll this
+	events:
+		"tap" : "ontap"
+		"dragstart" : "ondragstart"
+		"dragend" : "ondragend"
+		"drag" : "ondrag"
 
-		hammer = new Hammer this.el,
-				drag_min_distance: 0
-				drag_horizontal: true
-				drag_vertical: true
-				transform: false
-				hold: false
-				prevent_default: true
-		hammer.ontap = this.ontap
-		hammer.ondragstart = this.ondragstart
-		hammer.ondrag = this.ondrag
-		hammer.ondragend = this.ondragend
+	ontap: (event) ->
+		console.log "tap", this.model.get('content').get('title')
+		this.model.set 'active' : true
 
-		this
-	
-	ontap: () ->
-		console.log "tap", this
+	ondragstart: (event) ->
+		console.log "ondragstart", event
+		this.model.set 'isDragging' : true
 
-	ondragstart: () ->
-		console.log "dragstart", this
+	ondragend: (event) ->
+		console.log "ondragend", event
+		this.model.set 'isDragging' : false
 
-	ondrag: () ->
-		console.log "drag", this
+		this.model.positionOnGrid()
 
-	ondragend: () ->
-		console.log "dragend", this
+	ondrag: (event) ->
+		console.log "ondrag", event
+		return unless this.model.get 'isDragging'
+
+		this.model.set "drag_offset" :
+			x: event.distanceX
+			y: event.distanceY
+
+	move: () ->
+		offset = 
+			x: this.model.get('position').x * config.block.width + this.model.get("drag_offset").x
+			y: this.model.get('position').y * config.block.height + this.model.get("drag_offset").y
+
+		this.$el.css "-webkit-transform", "translate3d(#{offset.x}px,#{offset.y}px,0px)"
+
+	toggleActive: () ->
+		this.$el.toggleClass "active", this.model.get('active')
+		
+		clearTimeout this.deactivateTimeout
+		that = this
+		if this.model.get('active')
+			this.deactivateTimeout = setTimeout () -> 
+				that.model.set 'active' : false
+			, 1000
+
+	toggleZIndex: () ->
+		if this.model.get 'isDragging'
+			this.$el.css 'z-index', '2'
+		else
+			this.$el.css 'z-index', '1'
 
 	render: () ->
 		title = this.model.get('content').get('title')
@@ -79,8 +123,7 @@ class BlockView extends Backbone.View
 			</div>
 		"""
 
-		this.$el.css "left", this.model.get('position').x * config.block.width + "px"
-		this.$el.css "top", this.model.get('position').y * config.block.height + "px"
+		this.move()
 
 		this
 

@@ -4,9 +4,13 @@
 
   App = (function() {
     return $(function($) {
-      var blockCollection;
+      var blockCollection, multitTouch;
       blockCollection = new BlockCollection();
-      return window.blockCollection = blockCollection;
+      multitTouch = new MultiTouch({
+        el: $("#page").get(0)
+      });
+      window.blockCollection = blockCollection;
+      return window.multitTouch = multitTouch;
     });
   })();
 

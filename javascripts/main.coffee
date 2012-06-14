@@ -2,10 +2,10 @@ App = ( ->
 
 	$( ($) ->
 	 	# Bootstrap application
-
-		
-		# create blocks
+	
 		blockCollection = new BlockCollection()
+
+		multitTouch = new MultiTouch( el: $("#page").get(0) )
 
 		#block = new BlockView( model: new Block( content: contentCollection.first() ) )
 		#block.render().$el.appendTo $("#blocks")
@@ -16,6 +16,7 @@ App = ( ->
 
 		#window.folder = folder
 		window.blockCollection = blockCollection
+		window.multitTouch = multitTouch
 	)
 
 )();

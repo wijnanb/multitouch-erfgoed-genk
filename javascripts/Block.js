@@ -16,11 +16,38 @@
       position: {
         x: 0,
         y: 0
-      }
+      },
+      drag_offset: {
+        x: 0,
+        y: 0
+      },
+      active: false,
+      isDragging: false
     };
 
-    Block.prototype.initialize = function() {
-      return console.log("Block.initialize");
+    Block.prototype.initialize = function() {};
+
+    Block.prototype.positionOnGrid = function() {
+      var pixel_position;
+      pixel_position = {
+        x: this.get("position").x * config.block.width + this.get("drag_offset").x,
+        y: this.get("position").y * config.block.height + this.get("drag_offset").y
+      };
+      pixel_position.x = Math.max(0, Math.min(pixel_position.x, config.screen_width));
+      pixel_position.y = Math.max(0, Math.min(pixel_position.y, config.screen_height));
+      this.set({
+        "position": {
+          x: Math.round(pixel_position.x / config.block.width),
+          y: Math.round(pixel_position.y / config.block.height)
+        }
+      });
+      return this.set({
+        "drag_offset": {
+          x: 0,
+          y: 0
+        },
+        silent: true
+      });
     };
 
     return Block;
@@ -43,16 +70,15 @@
     };
 
     BlockCollection.prototype.reset = function() {
-      console.log("BlockCollection.reset");
       return this.contentCollection.each(function(element, index, list) {
-        var attributes, block, num_block_x;
-        console.log(index + ": " + element.get("title"));
-        num_block_x = Math.floor(config.screen_width / config.block.width);
+        var attributes, block;
+        this.num_block_x = Math.floor(config.screen_width / config.block.width);
+        this.num_block_y = Math.floor(config.screen_height / config.block.height);
         attributes = {
           content: element,
           position: {
-            x: index % num_block_x,
-            y: Math.floor(index / num_block_x)
+            x: index % this.num_block_x,
+            y: Math.floor(index / this.num_block_x)
           }
         };
         block = new BlockView({
@@ -77,38 +103,84 @@
     BlockView.prototype.className = "block";
 
     BlockView.prototype.initialize = function() {
-      var hammer;
-      console.log("BlockView.initialize");
       _.bindAll(this);
-      hammer = new Hammer(this.el, {
-        drag_min_distance: 0,
-        drag_horizontal: true,
-        drag_vertical: true,
-        transform: false,
-        hold: false,
-        prevent_default: true
+      this.model.bind("change:active", this.toggleActive);
+      this.model.bind("change:drag_offset", this.move);
+      this.model.bind("change:position", this.move);
+      return this.model.bind("change:isDragging", this.toggleZIndex);
+    };
+
+    BlockView.prototype.events = {
+      "tap": "ontap",
+      "dragstart": "ondragstart",
+      "dragend": "ondragend",
+      "drag": "ondrag"
+    };
+
+    BlockView.prototype.ontap = function(event) {
+      console.log("tap", this.model.get('content').get('title'));
+      return this.model.set({
+        'active': true
       });
-      hammer.ontap = this.ontap;
-      hammer.ondragstart = this.ondragstart;
-      hammer.ondrag = this.ondrag;
-      hammer.ondragend = this.ondragend;
-      return this;
     };
 
-    BlockView.prototype.ontap = function() {
-      return console.log("tap", this);
+    BlockView.prototype.ondragstart = function(event) {
+      console.log("ondragstart", event);
+      return this.model.set({
+        'isDragging': true
+      });
     };
 
-    BlockView.prototype.ondragstart = function() {
-      return console.log("dragstart", this);
+    BlockView.prototype.ondragend = function(event) {
+      console.log("ondragend", event);
+      this.model.set({
+        'isDragging': false
+      });
+      return this.model.positionOnGrid();
     };
 
-    BlockView.prototype.ondrag = function() {
-      return console.log("drag", this);
+    BlockView.prototype.ondrag = function(event) {
+      console.log("ondrag", event);
+      if (!this.model.get('isDragging')) {
+        return;
+      }
+      return this.model.set({
+        "drag_offset": {
+          x: event.distanceX,
+          y: event.distanceY
+        }
+      });
     };
 
-    BlockView.prototype.ondragend = function() {
-      return console.log("dragend", this);
+    BlockView.prototype.move = function() {
+      var offset;
+      offset = {
+        x: this.model.get('position').x * config.block.width + this.model.get("drag_offset").x,
+        y: this.model.get('position').y * config.block.height + this.model.get("drag_offset").y
+      };
+      return this.$el.css("-webkit-transform", "translate3d(" + offset.x + "px," + offset.y + "px,0px)");
+    };
+
+    BlockView.prototype.toggleActive = function() {
+      var that;
+      this.$el.toggleClass("active", this.model.get('active'));
+      clearTimeout(this.deactivateTimeout);
+      that = this;
+      if (this.model.get('active')) {
+        return this.deactivateTimeout = setTimeout(function() {
+          return that.model.set({
+            'active': false
+          });
+        }, 1000);
+      }
+    };
+
+    BlockView.prototype.toggleZIndex = function() {
+      if (this.model.get('isDragging')) {
+        return this.$el.css('z-index', '2');
+      } else {
+        return this.$el.css('z-index', '1');
+      }
     };
 
     BlockView.prototype.render = function() {
@@ -116,8 +188,7 @@
       title = this.model.get('content').get('title');
       date = this.model.get('content').niceDate();
       this.$el.html("<div class=\"inner\">\n	<div class=\"label\">\n		<div class=\"date\">" + date + "</div>\n		<h2>" + title + "</h2>\n	</div>\n</div>");
-      this.$el.css("left", this.model.get('position').x * config.block.width + "px");
-      this.$el.css("top", this.model.get('position').y * config.block.height + "px");
+      this.move();
       return this;
     };
 
