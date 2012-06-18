@@ -12,6 +12,10 @@
       return Block.__super__.constructor.apply(this, arguments);
     }
 
+    Block.prototype.LARGE = "large";
+
+    Block.prototype.SMALL = "small";
+
     Block.prototype.defaults = {
       position: {
         x: 0,
@@ -22,24 +26,39 @@
         y: 0
       },
       active: false,
-      isDragging: false
+      dragging: false,
+      size: Block.LARGE,
+      hover_position: false,
+      under: false,
+      transform_translation: null,
+      transform_scale: null,
+      transform_rotation: null,
+      transition_translation: null,
+      transition_scale: null
     };
 
-    Block.prototype.initialize = function() {};
+    Block.prototype.initialize = function() {
+      this.on("change:hover_position", this.onHover, this);
+      return this.on("change:under", this.onUnder, this);
+    };
 
-    Block.prototype.positionOnGrid = function() {
-      var pixel_position;
+    Block.prototype.nearestPosition = function() {
+      var nearestPosition, pixel_position;
       pixel_position = {
         x: this.get("position").x * config.block.width + this.get("drag_offset").x,
         y: this.get("position").y * config.block.height + this.get("drag_offset").y
       };
       pixel_position.x = Math.max(0, Math.min(pixel_position.x, config.screen_width));
       pixel_position.y = Math.max(0, Math.min(pixel_position.y, config.screen_height));
+      return nearestPosition = {
+        x: Math.round(pixel_position.x / config.block.width),
+        y: Math.round(pixel_position.y / config.block.height)
+      };
+    };
+
+    Block.prototype.positionOnGrid = function() {
       this.set({
-        "position": {
-          x: Math.round(pixel_position.x / config.block.width),
-          y: Math.round(pixel_position.y / config.block.height)
-        }
+        "position": this.nearestPosition()
       });
       return this.set({
         "drag_offset": {
@@ -48,6 +67,16 @@
         },
         silent: true
       });
+    };
+
+    Block.prototype.onHover = function() {};
+
+    Block.prototype.onUnder = function() {
+      if (this.get('under')) {
+        return this.set('size', this.SMALL);
+      } else {
+        return this.set('size', this.LARGE);
+      }
     };
 
     return Block;
@@ -65,27 +94,90 @@
     BlockCollection.prototype.model = Block;
 
     BlockCollection.prototype.initialize = function() {
+      _.bindAll(this);
       this.contentCollection = new ContentCollection();
-      return this.contentCollection.bind("reset", this.reset, this);
+      this.contentCollection.on("reset", this.contentReset);
+      return this.on("change:hover_position", this.onHover);
     };
 
-    BlockCollection.prototype.reset = function() {
+    BlockCollection.prototype.contentReset = function() {
+      var that;
+      that = this;
       return this.contentCollection.each(function(element, index, list) {
-        var attributes, block;
-        this.num_block_x = Math.floor(config.screen_width / config.block.width);
-        this.num_block_y = Math.floor(config.screen_height / config.block.height);
+        var attributes, block, blockView;
+        that.num_block_x = Math.floor(config.screen_width / config.block.width);
+        that.num_block_y = Math.floor(config.screen_height / config.block.height);
         attributes = {
           content: element,
           position: {
-            x: index % this.num_block_x,
-            y: Math.floor(index / this.num_block_x)
+            x: index % that.num_block_x,
+            y: Math.floor(index / that.num_block_x)
           }
         };
-        block = new BlockView({
-          model: new Block(attributes)
+        block = new Block(attributes);
+        that.add(block);
+        blockView = new BlockView({
+          model: block,
+          collection: that
         });
-        return block.render().$el.appendTo($("#blocks"));
+        return blockView.render().$el.appendTo($("#blocks"));
       });
+    };
+
+    BlockCollection.prototype.onHover = function(model) {
+      var neighbours, over;
+      if (model.get("hover_position") !== false) {
+        over = this.getBlockOnPosition(model.get("hover_position"));
+        if (over !== false) {
+          neighbours = this.getNeighboursForBlock(over);
+          _.each(neighbours, function(element, index) {
+            return element.set({
+              'under': true
+            });
+          });
+          return _.each(_.difference(this.models, neighbours), function(element, index) {
+            return element.set({
+              'under': false
+            });
+          });
+        }
+      }
+    };
+
+    BlockCollection.prototype.getBlockOnPosition = function(position) {
+      var block;
+      block = false;
+      this.each(function(element, index) {
+        var element_position;
+        if (!element.get("dragging")) {
+          element_position = element.get('position');
+          if (element_position.x === position.x && element_position.y === position.y) {
+            block = element;
+          }
+        }
+      });
+      return block;
+    };
+
+    BlockCollection.prototype.getNeighboursForBlock = function(block) {
+      var element, end_x, end_y, neighbours, position, start_x, start_y, x, y, _i, _j;
+      position = block.get("position");
+      start_x = Math.max(0, position.x - 1);
+      end_x = Math.min(position.x + 1, this.num_block_x - 1);
+      start_y = Math.max(0, position.y - 1);
+      end_y = Math.min(position.y + 1, this.num_block_y - 1);
+      neighbours = [];
+      for (x = _i = start_x; start_x <= end_x ? _i <= end_x : _i >= end_x; x = start_x <= end_x ? ++_i : --_i) {
+        for (y = _j = start_y; start_y <= end_y ? _j <= end_y : _j >= end_y; y = start_y <= end_y ? ++_j : --_j) {
+          if (element = this.getBlockOnPosition({
+            x: x,
+            y: y
+          })) {
+            neighbours.push(element);
+          }
+        }
+      }
+      return neighbours;
     };
 
     return BlockCollection;
@@ -104,10 +196,15 @@
 
     BlockView.prototype.initialize = function() {
       _.bindAll(this);
-      this.model.bind("change:active", this.toggleActive);
-      this.model.bind("change:drag_offset", this.move);
-      this.model.bind("change:position", this.move);
-      return this.model.bind("change:isDragging", this.toggleZIndex);
+      this.model.on("change:active", this.toggleActive);
+      this.model.on("change:drag_offset", this.move);
+      this.model.on("change:position", this.move);
+      this.model.on("change:dragging", this.toggleZIndex);
+      this.model.on("change:size", this.onChangeSize);
+      this.model.on("change:transform_translation", this.transform);
+      this.model.on("change:transform_scale", this.transform);
+      this.model.on("change:transform_rotation", this.transform);
+      return this.collection = this.options.collection;
     };
 
     BlockView.prototype.events = {
@@ -126,22 +223,33 @@
 
     BlockView.prototype.ondragstart = function(event) {
       console.log("ondragstart", event);
+      this.model.set({
+        'dragging': true
+      });
       return this.model.set({
-        'isDragging': true
+        'hover_position': this.model.get("position")
       });
     };
 
     BlockView.prototype.ondragend = function(event) {
       console.log("ondragend", event);
       this.model.set({
-        'isDragging': false
+        'dragging': false
       });
-      return this.model.positionOnGrid();
+      this.model.positionOnGrid();
+      this.model.set({
+        'hover_position': false
+      });
+      console.log(this.collection);
+      return this.collection.each(function(element, index) {
+        return element.set({
+          'under': false
+        });
+      });
     };
 
     BlockView.prototype.ondrag = function(event) {
-      console.log("ondrag", event);
-      if (!this.model.get('isDragging')) {
+      if (!this.model.get('dragging')) {
         return;
       }
       return this.model.set({
@@ -158,7 +266,14 @@
         x: this.model.get('position').x * config.block.width + this.model.get("drag_offset").x,
         y: this.model.get('position').y * config.block.height + this.model.get("drag_offset").y
       };
-      return this.$el.css("-webkit-transform", "translate3d(" + offset.x + "px," + offset.y + "px,0px)");
+      this.model.set({
+        "transform_translation": "" + offset.x + "px," + offset.y + "px,0px"
+      });
+      if (this.model.get('dragging')) {
+        return this.model.set({
+          'hover_position': this.model.nearestPosition()
+        });
+      }
     };
 
     BlockView.prototype.toggleActive = function() {
@@ -176,7 +291,7 @@
     };
 
     BlockView.prototype.toggleZIndex = function() {
-      if (this.model.get('isDragging')) {
+      if (this.model.get('dragging')) {
         return this.$el.css('z-index', '2');
       } else {
         return this.$el.css('z-index', '1');
@@ -190,6 +305,49 @@
       this.$el.html("<div class=\"inner\">\n	<div class=\"label\">\n		<div class=\"date\">" + date + "</div>\n		<h2>" + title + "</h2>\n	</div>\n</div>");
       this.move();
       return this;
+    };
+
+    BlockView.prototype.transform = function() {
+      var css, rotation, scale, transition_scale, transition_translation, translation;
+      css = "";
+      if (scale = this.model.get("transform_scale")) {
+        css += "scale(" + scale + ") ";
+      }
+      if (rotation = this.model.get("transform_rotation")) {
+        css += "rotate(" + rotation + ") ";
+      }
+      if (transition_scale = this.model.get("transition_scale")) {
+        this.$el.children('.inner').css("-webkit-transition", transition_scale);
+      }
+      this.$el.children('.inner').css("-webkit-transform", css);
+      if (transition_translation = this.model.get("transition_translation")) {
+        this.$el.css("-webkit-transition", transition_translation);
+      }
+      if (translation = this.model.get("transform_translation")) {
+        return this.$el.css("-webkit-transform", "translate3d(" + translation + ") ");
+      }
+    };
+
+    BlockView.prototype.onChangeSize = function() {
+      if (this.model.get("size") === this.model.SMALL) {
+        this.$el.addClass("small");
+        this.model.set({
+          "transition_scale": "all 0.5s ease-out 0s"
+        });
+        this.model.set({
+          "transform_scale": 0.8
+        });
+        return this.$el.children(".inner").css("opacity", 0.5);
+      } else {
+        this.$el.removeClass("small");
+        this.model.set({
+          "transition_scale": "all 0.5s ease-out 0s"
+        });
+        this.model.set({
+          "transform_scale": null
+        });
+        return this.$el.children(".inner").css("opacity", "");
+      }
     };
 
     return BlockView;
