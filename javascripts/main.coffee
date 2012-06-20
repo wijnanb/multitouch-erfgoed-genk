@@ -4,19 +4,24 @@ App = ( ->
 	 	# Bootstrap application
 	
 		blockCollection = new BlockCollection()
+		regionCollection = new RegionCollection()
 
-		multitTouch = new MultiTouch( el: $("#page").get(0) )
+		grid = new Grid(blocks: blockCollection, regions: regionCollection)
+		
+		gridView = new GridView(model: grid, el: $("#gridView")).render()
 
-		#block = new BlockView( model: new Block( content: contentCollection.first() ) )
-		#block.render().$el.appendTo $("#blocks")
+		multiTouch = new MultiTouch( el: $("body").get(0) )
+
+		
 
 		# create a Folder
 		#folder = new FolderView( model: new Folder( content: contentCollection.first() ) )
 		#folder.render().$el.appendTo $("#folders")
 
-		#window.folder = folder
+		window.regionCollection = regionCollection
 		window.blockCollection = blockCollection
-		window.multitTouch = multitTouch
+		window.grid = grid
+		window.multiTouch = multiTouch
 	)
 
 )();

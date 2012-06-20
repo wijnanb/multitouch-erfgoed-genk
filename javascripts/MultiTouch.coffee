@@ -21,6 +21,7 @@ class MultiTouch extends Backbone.View
 	
 	ontap: (event) ->
 		this.passEventToBlock event
+		this.passEventToRegion event
 
 	ondragstart: (event) ->
 		this.passEventToBlock event
@@ -30,6 +31,13 @@ class MultiTouch extends Backbone.View
 
 	ondragend: (event) ->
 		this.passEventToBlock event
+
+	passEventToRegion: (event) ->
+		touches = event.originalEvent.touches || [event.originalEvent]
+		for touch in touches
+			region = $(touch.target).parents(".region-button")
+			if region.length > 0
+				$(region).trigger event
 
 	passEventToBlock: (event) ->
 		touches = event.originalEvent.touches || [event.originalEvent]

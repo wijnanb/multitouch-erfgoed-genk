@@ -8,7 +8,7 @@ $scheme-orange: #AB6937
 $scheme-yellow: #D4A960
 
 body
-	background-color: white
+	background-color: #222
 	font-family: "Helvetica Neue", Helvetica, Arial
 	font-size: 14px
 	line-height: 17px
@@ -22,10 +22,10 @@ body
 #page
 	background-color: black
 	position: absolute
-	top: 3px
-	left: 3px
-	bottom: 3px
-	right: 3px
+	top: 30px
+	left: 30px
+	bottom: 30px
+	right: 30px
 	overflow: hidden
 
 #blocks
@@ -40,20 +40,21 @@ body
 	overflow: hidden
 	margin: 5px
 	z-index: 1
+	border: 2px solid black
 	&.active
-		background-color: yellow
+		border: 2px solid yellow
 	.inner
 		background-color: black
 		background-image: url(../images/content/example_block.jpg)
-		width: 100%
-		height: 100%
+		width: 200px
+		height: 200px
 		overflow: hidden
 		.label
 			background-color: $scheme-red
 			position: absolute
-			bottom: 2px
-			left: 2px
-			right: 2px
+			bottom: 0px
+			left: 0px
+			right: 0px
 			text-align: right
 			padding: 10px
 			.date
@@ -109,3 +110,89 @@ body
 				width: 450px
 				left: 50px
 
+.region-button
+	.piece
+		position: absolute
+		background-color: $scheme-yellow
+		margin: 5px
+		&.horizontal
+			height: 20px
+			width: 200px
+		&.vertical
+			width: 20px
+			height: 150px
+
+	&.active .piece
+		background-color: yellow
+
+	&.top-left
+		.horizontal
+			width: 200px
+		.vertical
+			height: 150px
+
+	&.top
+		.horizontal
+			left: 50%
+			margin-left: -150px
+			width: 300px
+		.vertical
+			display: none
+
+	&.top-right
+		.horizontal
+			width: 200px
+			right: 0px
+		.vertical
+			right: 0px
+			height: 150px
+
+	&.bottom-left
+		.horizontal
+			bottom: 0px
+			width: 200px
+		.vertical
+			height: 150px
+			bottom: 0px
+
+	&.bottom
+		.horizontal
+			left: 50%
+			margin-left: -150px
+			width: 300px
+			bottom: 0px
+		.vertical
+			display: none
+
+	&.bottom-right
+		.horizontal
+			width: 200px
+			right: 0px
+			bottom: 0px
+		.vertical
+			right: 0px
+			bottom: 0px
+			height: 150px
+
+#gridView
+	position: absolute
+	width: 280px
+	height: 160px
+	top: 50%
+	left: 50%
+	margin-left: -140px
+	margin-top: -80px
+	background-color: white
+	color: black
+	z-index: 2000
+	table
+		width: 100%
+		height: 100%
+		td
+			border: 1px solid #999
+			text-align: center
+			vertical-align: middle
+			width: 18px
+			height: 19px
+			margin: 0
+			padding: 0

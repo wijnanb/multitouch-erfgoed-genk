@@ -34,7 +34,8 @@
       transform_scale: null,
       transform_rotation: null,
       transition_translation: null,
-      transition_scale: null
+      transition_scale: null,
+      empty: true
     };
 
     Block.prototype.initialize = function() {
@@ -103,7 +104,7 @@
     BlockCollection.prototype.contentReset = function() {
       var that;
       that = this;
-      return this.contentCollection.each(function(element, index, list) {
+      this.contentCollection.each(function(element, index, list) {
         var attributes, block, blockView;
         that.num_block_x = Math.floor(config.screen_width / config.block.width);
         that.num_block_y = Math.floor(config.screen_height / config.block.height);
@@ -122,25 +123,24 @@
         });
         return blockView.render().$el.appendTo($("#blocks"));
       });
+      return this.trigger("contentReset");
     };
 
     BlockCollection.prototype.onHover = function(model) {
       var neighbours, over;
       if (model.get("hover_position") !== false) {
         over = this.getBlockOnPosition(model.get("hover_position"));
-        if (over !== false) {
-          neighbours = this.getNeighboursForBlock(over);
-          _.each(neighbours, function(element, index) {
-            return element.set({
-              'under': true
-            });
+        neighbours = this.getNeightboursForPosition(model.nearestPosition());
+        _.each(neighbours, function(element, index) {
+          return element.set({
+            'under': true
           });
-          return _.each(_.difference(this.models, neighbours), function(element, index) {
-            return element.set({
-              'under': false
-            });
+        });
+        return _.each(_.difference(this.models, neighbours), function(element, index) {
+          return element.set({
+            'under': false
           });
-        }
+        });
       }
     };
 
@@ -159,9 +159,8 @@
       return block;
     };
 
-    BlockCollection.prototype.getNeighboursForBlock = function(block) {
-      var element, end_x, end_y, neighbours, position, start_x, start_y, x, y, _i, _j;
-      position = block.get("position");
+    BlockCollection.prototype.getNeightboursForPosition = function(position) {
+      var element, end_x, end_y, neighbours, start_x, start_y, x, y, _i, _j;
       start_x = Math.max(0, position.x - 1);
       end_x = Math.min(position.x + 1, this.num_block_x - 1);
       start_y = Math.max(0, position.y - 1);

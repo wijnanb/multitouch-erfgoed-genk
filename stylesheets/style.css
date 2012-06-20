@@ -213,7 +213,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 
 /* line 10, ../sass/style.sass */
 body {
-  background-color: white;
+  background-color: #222222;
   font-family: "Helvetica Neue", Helvetica, Arial;
   font-size: 14px;
   line-height: 17px;
@@ -231,10 +231,10 @@ body {
 #page {
   background-color: black;
   position: absolute;
-  top: 3px;
-  left: 3px;
-  bottom: 3px;
-  right: 3px;
+  top: 30px;
+  left: 30px;
+  bottom: 30px;
+  right: 30px;
   overflow: hidden;
 }
 
@@ -253,47 +253,48 @@ body {
   overflow: hidden;
   margin: 5px;
   z-index: 1;
+  border: 2px solid black;
 }
-/* line 43, ../sass/style.sass */
+/* line 44, ../sass/style.sass */
 .block.active {
-  background-color: yellow;
+  border: 2px solid yellow;
 }
-/* line 45, ../sass/style.sass */
+/* line 46, ../sass/style.sass */
 .block .inner {
   background-color: black;
   background-image: url(../images/content/example_block.jpg);
-  width: 100%;
-  height: 100%;
+  width: 200px;
+  height: 200px;
   overflow: hidden;
 }
-/* line 51, ../sass/style.sass */
+/* line 52, ../sass/style.sass */
 .block .inner .label {
   background-color: #8c3b3b;
   position: absolute;
-  bottom: 2px;
-  left: 2px;
-  right: 2px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
   text-align: right;
   padding: 10px;
 }
-/* line 59, ../sass/style.sass */
+/* line 60, ../sass/style.sass */
 .block .inner .label .date {
   color: #ab6937;
 }
-/* line 61, ../sass/style.sass */
+/* line 62, ../sass/style.sass */
 .block .inner .label h2 {
   color: white;
   font-size: 16px;
   line-height: 19px;
 }
 
-/* line 66, ../sass/style.sass */
+/* line 67, ../sass/style.sass */
 .folder {
   position: absolute;
   left: 300px;
   top: 20px;
 }
-/* line 71, ../sass/style.sass */
+/* line 72, ../sass/style.sass */
 .folder .inner .photo {
   position: absolute;
   top: 20px;
@@ -301,17 +302,17 @@ body {
   width: 400px;
   border: 10px solid white;
 }
-/* line 77, ../sass/style.sass */
+/* line 78, ../sass/style.sass */
 .folder .inner .photo img {
   width: 100%;
 }
-/* line 79, ../sass/style.sass */
+/* line 80, ../sass/style.sass */
 .folder .inner .details {
   position: absolute;
   top: 330px;
   left: 20px;
 }
-/* line 83, ../sass/style.sass */
+/* line 84, ../sass/style.sass */
 .folder .inner .details h1 {
   position: absolute;
   background-color: rgba(171, 105, 55, 0.6);
@@ -323,7 +324,7 @@ body {
   padding: 6px 8px;
   width: 300px;
 }
-/* line 93, ../sass/style.sass */
+/* line 94, ../sass/style.sass */
 .folder .inner .details .description {
   position: absolute;
   background-color: white;
@@ -336,7 +337,7 @@ body {
   width: 450px;
   height: 160px;
 }
-/* line 104, ../sass/style.sass */
+/* line 105, ../sass/style.sass */
 .folder .inner .details .date {
   position: absolute;
   top: 225px;
@@ -344,4 +345,115 @@ body {
   text-align: right;
   width: 450px;
   left: 50px;
+}
+
+/* line 114, ../sass/style.sass */
+.region-button .piece {
+  position: absolute;
+  background-color: #d4a960;
+  margin: 5px;
+}
+/* line 118, ../sass/style.sass */
+.region-button .piece.horizontal {
+  height: 20px;
+  width: 200px;
+}
+/* line 121, ../sass/style.sass */
+.region-button .piece.vertical {
+  width: 20px;
+  height: 150px;
+}
+/* line 125, ../sass/style.sass */
+.region-button.active .piece {
+  background-color: yellow;
+}
+/* line 129, ../sass/style.sass */
+.region-button.top-left .horizontal {
+  width: 200px;
+}
+/* line 131, ../sass/style.sass */
+.region-button.top-left .vertical {
+  height: 150px;
+}
+/* line 135, ../sass/style.sass */
+.region-button.top .horizontal {
+  left: 50%;
+  margin-left: -150px;
+  width: 300px;
+}
+/* line 139, ../sass/style.sass */
+.region-button.top .vertical {
+  display: none;
+}
+/* line 143, ../sass/style.sass */
+.region-button.top-right .horizontal {
+  width: 200px;
+  right: 0px;
+}
+/* line 146, ../sass/style.sass */
+.region-button.top-right .vertical {
+  right: 0px;
+  height: 150px;
+}
+/* line 151, ../sass/style.sass */
+.region-button.bottom-left .horizontal {
+  bottom: 0px;
+  width: 200px;
+}
+/* line 154, ../sass/style.sass */
+.region-button.bottom-left .vertical {
+  height: 150px;
+  bottom: 0px;
+}
+/* line 159, ../sass/style.sass */
+.region-button.bottom .horizontal {
+  left: 50%;
+  margin-left: -150px;
+  width: 300px;
+  bottom: 0px;
+}
+/* line 164, ../sass/style.sass */
+.region-button.bottom .vertical {
+  display: none;
+}
+/* line 168, ../sass/style.sass */
+.region-button.bottom-right .horizontal {
+  width: 200px;
+  right: 0px;
+  bottom: 0px;
+}
+/* line 172, ../sass/style.sass */
+.region-button.bottom-right .vertical {
+  right: 0px;
+  bottom: 0px;
+  height: 150px;
+}
+
+/* line 177, ../sass/style.sass */
+#gridView {
+  position: absolute;
+  width: 280px;
+  height: 160px;
+  top: 50%;
+  left: 50%;
+  margin-left: -140px;
+  margin-top: -80px;
+  background-color: white;
+  color: black;
+  z-index: 2000;
+}
+/* line 188, ../sass/style.sass */
+#gridView table {
+  width: 100%;
+  height: 100%;
+}
+/* line 191, ../sass/style.sass */
+#gridView table td {
+  border: 1px solid #999999;
+  text-align: center;
+  vertical-align: middle;
+  width: 18px;
+  height: 19px;
+  margin: 0;
+  padding: 0;
 }

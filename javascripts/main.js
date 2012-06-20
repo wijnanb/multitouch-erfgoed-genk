@@ -4,13 +4,24 @@
 
   App = (function() {
     return $(function($) {
-      var blockCollection, multitTouch;
+      var blockCollection, grid, gridView, multiTouch, regionCollection;
       blockCollection = new BlockCollection();
-      multitTouch = new MultiTouch({
-        el: $("#page").get(0)
+      regionCollection = new RegionCollection();
+      grid = new Grid({
+        blocks: blockCollection,
+        regions: regionCollection
       });
+      gridView = new GridView({
+        model: grid,
+        el: $("#gridView")
+      }).render();
+      multiTouch = new MultiTouch({
+        el: $("body").get(0)
+      });
+      window.regionCollection = regionCollection;
       window.blockCollection = blockCollection;
-      return window.multitTouch = multitTouch;
+      window.grid = grid;
+      return window.multiTouch = multiTouch;
     });
   })();
 

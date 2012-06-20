@@ -8,6 +8,14 @@
     block: {
       width: 214,
       height: 214
+    },
+    grid_size: {
+      x: 14,
+      y: 8
+    },
+    region_size: {
+      x: 6,
+      y: 3
     }
   };
 

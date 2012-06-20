@@ -32,7 +32,8 @@
     };
 
     MultiTouch.prototype.ontap = function(event) {
-      return this.passEventToBlock(event);
+      this.passEventToBlock(event);
+      return this.passEventToRegion(event);
     };
 
     MultiTouch.prototype.ondragstart = function(event) {
@@ -45,6 +46,22 @@
 
     MultiTouch.prototype.ondragend = function(event) {
       return this.passEventToBlock(event);
+    };
+
+    MultiTouch.prototype.passEventToRegion = function(event) {
+      var region, touch, touches, _i, _len, _results;
+      touches = event.originalEvent.touches || [event.originalEvent];
+      _results = [];
+      for (_i = 0, _len = touches.length; _i < _len; _i++) {
+        touch = touches[_i];
+        region = $(touch.target).parents(".region-button");
+        if (region.length > 0) {
+          _results.push($(region).trigger(event));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     MultiTouch.prototype.passEventToBlock = function(event) {

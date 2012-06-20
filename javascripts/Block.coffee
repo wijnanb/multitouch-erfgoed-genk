@@ -11,7 +11,7 @@ class Block extends Backbone.Model
 			y: 0
 		active: false
 		dragging: false
-		size: this.LARGE
+		size: @LARGE
 		hover_position: false
 		under: false
 		transform_translation: null
@@ -19,6 +19,7 @@ class Block extends Backbone.Model
 		transform_rotation: null
 		transition_translation: null
 		transition_scale: null
+		empty: true
 
 	initialize: () ->
 		this.on "change:hover_position", this.onHover, this
@@ -80,16 +81,18 @@ class BlockCollection extends Backbone.Collection
 
 			blockView = new BlockView( model: block, collection: that )
 			blockView.render().$el.appendTo $("#blocks")
+		
+		this.trigger "contentReset"
 
 	onHover: (model) ->
 		unless model.get("hover_position") == false
 			over = this.getBlockOnPosition( model.get("hover_position") )
-			unless over == false
-				neighbours = this.getNeighboursForBlock over
-				_.each neighbours, (element, index) ->
-					element.set 'under' : true
-				_.each _.difference(this.models, neighbours), (element, index) ->
-					element.set 'under' : false
+			neighbours = this.getNeightboursForPosition model.nearestPosition()
+			
+			_.each neighbours, (element, index) ->
+				element.set 'under' : true
+			_.each _.difference(this.models, neighbours), (element, index) ->
+				element.set 'under' : false
 
 	getBlockOnPosition: (position) ->
 		block = false
@@ -101,8 +104,7 @@ class BlockCollection extends Backbone.Collection
 					return
 		block
 
-	getNeighboursForBlock: (block) ->
-		position = block.get("position")
+	getNeightboursForPosition: (position) ->
 
 		start_x = Math.max 0, position.x - 1
 		end_x = Math.min position.x + 1, this.num_block_x - 1
