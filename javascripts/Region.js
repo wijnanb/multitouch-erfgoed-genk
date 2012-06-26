@@ -12,35 +12,25 @@
       return Region.__super__.constructor.apply(this, arguments);
     }
 
-    Region.TOP_LEFT = "top-left";
-
-    Region.TOP = "top";
-
-    Region.TOP_RIGHT = "top-right";
-
-    Region.BOTTOM_LEFT = "bottom-left";
-
-    Region.BOTTOM = "bottom";
-
-    Region.BOTTOM_RIGHT = "bottom-right";
-
-    Region.POSITIONS = [Region.TOP_LEFT, Region.TOP, Region.TOP_RIGHT, Region.BOTTOM_LEFT, Region.BOTTOM, Region.BOTTOM_RIGHT];
-
     Region.prototype.defaults = {
       position: null,
-      active: false
+      active: false,
+      sensor: false
     };
 
     Region.prototype.initialize = function() {
       this.on("change:hover_position", this.onHover, this);
-      return this.on("change:under", this.onUnder, this);
+      this.on("change:under", this.onUnder, this);
+      return this.on("change:active", this.onActiveChanged, this);
     };
 
-    Region.prototype.toggleActive = function() {
+    Region.prototype.toggleSensor = function() {
       return this.set({
-        "active": !this.get("active")
+        "sensor": !this.get("sensor")
       });
     };
+
+    Region.prototype.onActiveChanged = function() {};
 
     return Region;
 
@@ -56,26 +46,146 @@
 
     RegionCollection.prototype.model = Region;
 
+    RegionCollection.prototype.active_top = 0;
+
+    RegionCollection.prototype.active_bottom = 0;
+
+    RegionCollection.prototype.sensors = [];
+
+    RegionCollection.prototype.positions = [TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT];
+
     RegionCollection.prototype.initialize = function() {
       _.bindAll(this);
-      return this.reset();
+      this.reset();
+      return this.on("change:sensor", this.onSensorChanged, this);
     };
 
     RegionCollection.prototype.reset = function() {
       var button, position, region, _i, _len, _ref, _results;
-      console.log(Region.POSITIONS);
-      _ref = Region.POSITIONS;
+      _ref = this.positions;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         position = _ref[_i];
-        console.log(position);
         region = new Region({
-          position: position
+          'position': position
         });
+        this.add(region);
         button = new RegionButton({
           model: region
         });
         _results.push(button.render().$el.appendTo($("#regions")));
+      }
+      return _results;
+    };
+
+    RegionCollection.prototype.onSensorChanged = function(model) {
+      var detected_at_bottom, detected_at_bottom_left_right, detected_at_top, detected_at_top_left_right, move_center_to, oldSensors;
+      oldSensors = this.sensors;
+      this.sensors = _.map(this.getActiveSensors(), function(element) {
+        return element.get('position');
+      });
+      detected_at_top = _.include(this.sensors, TOP) || _.include(this.sensors, TOP_LEFT) || _.include(this.sensors, TOP_RIGHT);
+      detected_at_top_left_right = _.include(this.sensors, TOP_LEFT) && _.include(this.sensors, TOP_RIGHT);
+      if (detected_at_top) {
+        if (detected_at_top_left_right) {
+          if (2 !== this.active_top) {
+            move_center_to = _.include(oldSensors, TOP_LEFT) ? TOP_LEFT : TOP_RIGHT;
+            this.active_top = 2;
+            this.toggleActiveOnRegions({
+              TOP_LEFT: true,
+              TOP: false,
+              TOP_RIGHT: true
+            });
+          }
+        } else {
+          if (1 !== this.active_top) {
+            this.active_top = 1;
+            this.toggleActiveOnRegions({
+              TOP_LEFT: false,
+              TOP: true,
+              TOP_RIGHT: false
+            });
+          }
+        }
+      } else {
+        if (0 !== this.active_top) {
+          this.active_top = 0;
+          this.toggleActiveOnRegions({
+            TOP_LEFT: false,
+            TOP: false,
+            TOP_RIGHT: false
+          });
+        }
+      }
+      detected_at_bottom = _.include(this.sensors, BOTTOM) || _.include(this.sensors, BOTTOM_LEFT) || _.include(this.sensors, BOTTOM_RIGHT);
+      detected_at_bottom_left_right = _.include(this.sensors, BOTTOM_LEFT) && _.include(this.sensors, BOTTOM_RIGHT);
+      if (detected_at_bottom) {
+        if (detected_at_bottom_left_right) {
+          if (2 !== this.active_bottom) {
+            move_center_to = _.include(oldSensors, BOTTOM_LEFT) ? BOTTOM_LEFT : BOTTOM_RIGHT;
+            this.active_bottom = 2;
+            return this.toggleActiveOnRegions({
+              BOTTOM_LEFT: true,
+              BOTTOM: false,
+              BOTTOM_RIGHT: true
+            });
+          }
+        } else {
+          if (1 !== this.active_bottom) {
+            this.active_bottom = 1;
+            return this.toggleActiveOnRegions({
+              BOTTOM_LEFT: false,
+              BOTTOM: true,
+              BOTTOM_RIGHT: false
+            });
+          }
+        }
+      } else {
+        if (0 !== this.active_bottom) {
+          this.active_bottom = 0;
+          return this.toggleActiveOnRegions({
+            BOTTOM_LEFT: false,
+            BOTTOM: false,
+            BOTTOM_RIGHT: false
+          });
+        }
+      }
+    };
+
+    RegionCollection.prototype.getActiveRegions = function() {
+      var activeRegions;
+      return activeRegions = this.filter(function(element) {
+        return element.get('active');
+      });
+    };
+
+    RegionCollection.prototype.getActiveSensors = function() {
+      var activeSensors;
+      return activeSensors = this.filter(function(element) {
+        return element.get('sensor');
+      });
+    };
+
+    RegionCollection.prototype.getRegionAtPosition = function(position) {
+      return this.find(function(element) {
+        return element.get('position') === position;
+      });
+    };
+
+    RegionCollection.prototype.toggleActiveOnRegions = function(regions) {
+      var changed, position, region, value, _results;
+      changed = false;
+      _results = [];
+      for (position in regions) {
+        value = regions[position];
+        region = this.getRegionAtPosition(position);
+        if (region) {
+          _results.push(region.set({
+            'active': value
+          }));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };
@@ -126,7 +236,7 @@
     RegionButton.prototype.initialize = function() {
       _.bindAll(this);
       this.collection = this.options.collection;
-      return this.model.on("change:active", this.onActiveChanged);
+      return this.model.on("change:sensor", this.onSensorChanged);
     };
 
     RegionButton.prototype.render = function() {
@@ -136,11 +246,11 @@
     };
 
     RegionButton.prototype.ontap = function(event) {
-      return this.model.toggleActive();
+      return this.model.toggleSensor();
     };
 
-    RegionButton.prototype.onActiveChanged = function() {
-      return this.$el.toggleClass("active", this.model.get("active"));
+    RegionButton.prototype.onSensorChanged = function() {
+      return this.$el.toggleClass("active", this.model.get("sensor"));
     };
 
     return RegionButton;

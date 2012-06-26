@@ -1,43 +1,119 @@
 class Region extends Backbone.Model
-	@TOP_LEFT: "top-left"
-	@TOP: "top"
-	@TOP_RIGHT: "top-right"
-	@BOTTOM_LEFT: "bottom-left"
-	@BOTTOM: "bottom"
-	@BOTTOM_RIGHT: "bottom-right"
-
-	@POSITIONS: [@TOP_LEFT, @TOP, @TOP_RIGHT, @BOTTOM_LEFT, @BOTTOM, @BOTTOM_RIGHT]
-
 	defaults:
 		position: null
 		active: false
+		sensor: false
 
 	initialize: () ->
 		this.on "change:hover_position", this.onHover, this
 		this.on "change:under", this.onUnder, this
+		this.on "change:active", this.onActiveChanged, this
 
-	toggleActive: () ->
-		this.set "active" : !this.get("active")
+	toggleSensor: () ->
+		this.set "sensor" : !this.get("sensor")
+
+	onActiveChanged: () ->
+		#console.log "onActiveChanged"
+
 
 
 
 
 class RegionCollection extends Backbone.Collection
 	model: Region
+	active_top: 0
+	active_bottom: 0
+	sensors: []
+	positions: [TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
 	
 	initialize: () ->
 		_.bindAll this
 		this.reset()
-
+		this.on "change:sensor", this.onSensorChanged, this
+	
 	reset: () ->
-		console.log Region.POSITIONS
-		for position in Region.POSITIONS
-			console.log position
-			region = new Region position: position
+		for position in this.positions
+			region = new Region 'position' : position
+			this.add region
+
 			button = new RegionButton model: region
 			button.render().$el.appendTo $("#regions")
 
+	onSensorChanged: (model) ->
+		oldSensors = this.sensors
+		this.sensors = _.map this.getActiveSensors(), (element) -> element.get('position')
 
+		detected_at_top =  _.include(this.sensors, TOP)   ||   _.include(this.sensors, TOP_LEFT)  ||    _.include(this.sensors, TOP_RIGHT)
+		detected_at_top_left_right = _.include(this.sensors, TOP_LEFT)  &&    _.include(this.sensors, TOP_RIGHT)
+		
+		if detected_at_top
+			if detected_at_top_left_right
+				if 2 != this.active_top
+					move_center_to = if _.include(oldSensors, TOP_LEFT) then TOP_LEFT else TOP_RIGHT
+					this.active_top = 2
+					this.toggleActiveOnRegions
+						TOP_LEFT : true
+						TOP : false
+						TOP_RIGHT : true
+			else
+				if 1 != this.active_top
+					this.active_top = 1
+					this.toggleActiveOnRegions
+						TOP_LEFT : false
+						TOP : true
+						TOP_RIGHT : false
+		else
+			if 0 != this.active_top
+				this.active_top = 0
+				this.toggleActiveOnRegions
+						TOP_LEFT : false
+						TOP : false
+						TOP_RIGHT : false
+
+		detected_at_bottom =  _.include(this.sensors, BOTTOM)   ||   _.include(this.sensors, BOTTOM_LEFT)  ||    _.include(this.sensors, BOTTOM_RIGHT)
+		detected_at_bottom_left_right = _.include(this.sensors, BOTTOM_LEFT)  &&    _.include(this.sensors, BOTTOM_RIGHT)
+		
+		if detected_at_bottom
+			if detected_at_bottom_left_right
+				if 2 != this.active_bottom
+					move_center_to = if _.include(oldSensors, BOTTOM_LEFT) then BOTTOM_LEFT else BOTTOM_RIGHT
+					this.active_bottom = 2
+					this.toggleActiveOnRegions
+						BOTTOM_LEFT : true
+						BOTTOM : false
+						BOTTOM_RIGHT : true
+			else
+				if 1 != this.active_bottom
+					this.active_bottom = 1
+					this.toggleActiveOnRegions
+						BOTTOM_LEFT : false
+						BOTTOM : true
+						BOTTOM_RIGHT : false
+		else
+			if 0 != this.active_bottom
+				this.active_bottom = 0
+				this.toggleActiveOnRegions
+						BOTTOM_LEFT : false
+						BOTTOM : false
+						BOTTOM_RIGHT : false		
+
+		
+	getActiveRegions: () ->
+		activeRegions = this.filter (element)-> element.get('active')
+
+	getActiveSensors: () ->
+		activeSensors = this.filter (element)-> element.get('sensor')
+
+	getRegionAtPosition: (position) ->
+		this.find (element) -> element.get('position') == position
+
+	toggleActiveOnRegions: (regions) ->
+		changed = false
+		for position, value of regions
+			region = this.getRegionAtPosition(position)
+			if region
+				region.set('active' : value)
+			
 
 class RegionView extends Backbone.View
 	className: "region"
@@ -65,7 +141,7 @@ class RegionButton extends Backbone.View
 	initialize: () ->
 		_.bindAll this
 		this.collection = this.options.collection
-		this.model.on "change:active", this.onActiveChanged
+		this.model.on "change:sensor", this.onSensorChanged
 
 	render: () ->
 		this.$el.addClass this.model.get "position"
@@ -78,11 +154,11 @@ class RegionButton extends Backbone.View
 		this
 
 	ontap: (event) ->
-		this.model.toggleActive()
+		this.model.toggleSensor()
 
 
-	onActiveChanged: () ->
-		this.$el.toggleClass "active", this.model.get("active")
+	onSensorChanged: () ->
+		this.$el.toggleClass "active", this.model.get("sensor")
 
 
 

@@ -368,62 +368,62 @@ body {
   background-color: yellow;
 }
 /* line 129, ../sass/style.sass */
-.region-button.top-left .horizontal {
+.region-button.TOP_LEFT .horizontal {
   width: 200px;
 }
 /* line 131, ../sass/style.sass */
-.region-button.top-left .vertical {
+.region-button.TOP_LEFT .vertical {
   height: 150px;
 }
 /* line 135, ../sass/style.sass */
-.region-button.top .horizontal {
+.region-button.TOP .horizontal {
   left: 50%;
   margin-left: -150px;
   width: 300px;
 }
 /* line 139, ../sass/style.sass */
-.region-button.top .vertical {
+.region-button.TOP .vertical {
   display: none;
 }
 /* line 143, ../sass/style.sass */
-.region-button.top-right .horizontal {
+.region-button.TOP_RIGHT .horizontal {
   width: 200px;
   right: 0px;
 }
 /* line 146, ../sass/style.sass */
-.region-button.top-right .vertical {
+.region-button.TOP_RIGHT .vertical {
   right: 0px;
   height: 150px;
 }
 /* line 151, ../sass/style.sass */
-.region-button.bottom-left .horizontal {
+.region-button.BOTTOM_LEFT .horizontal {
   bottom: 0px;
   width: 200px;
 }
 /* line 154, ../sass/style.sass */
-.region-button.bottom-left .vertical {
+.region-button.BOTTOM_LEFT .vertical {
   height: 150px;
   bottom: 0px;
 }
 /* line 159, ../sass/style.sass */
-.region-button.bottom .horizontal {
+.region-button.BOTTOM .horizontal {
   left: 50%;
   margin-left: -150px;
   width: 300px;
   bottom: 0px;
 }
 /* line 164, ../sass/style.sass */
-.region-button.bottom .vertical {
+.region-button.BOTTOM .vertical {
   display: none;
 }
 /* line 168, ../sass/style.sass */
-.region-button.bottom-right .horizontal {
+.region-button.BOTTOM_RIGHT .horizontal {
   width: 200px;
   right: 0px;
   bottom: 0px;
 }
 /* line 172, ../sass/style.sass */
-.region-button.bottom-right .vertical {
+.region-button.BOTTOM_RIGHT .vertical {
   right: 0px;
   bottom: 0px;
   height: 150px;

@@ -1,0 +1,6 @@
+const TOP_LEFT = "TOP_LEFT"
+const TOP = "TOP"
+const TOP_RIGHT = "TOP_RIGHT"
+const BOTTOM_LEFT = "BOTTOM_LEFT"
+const BOTTOM = "BOTTOM"
+const BOTTOM_RIGHT = "BOTTOM_RIGHT"
