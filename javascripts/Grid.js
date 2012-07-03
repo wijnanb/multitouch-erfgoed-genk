@@ -34,7 +34,7 @@
 
     Grid.prototype.update = function() {
       var activeRegions, region, _i, _len;
-      this.clearRegions();
+      this.emptyGrid();
       activeRegions = this.get('regions').getActiveRegions();
       for (_i = 0, _len = activeRegions.length; _i < _len; _i++) {
         region = activeRegions[_i];
@@ -60,8 +60,28 @@
 
     Grid.prototype.val = function(x, y) {
       var data;
+      if (x < 0 || y < 0 || x > config.grid_size.x - 1 || y > config.grid_size.y - 1) {
+        return false;
+      }
       data = this.get("data");
       return data[y * config.grid_size.x + x];
+    };
+
+    Grid.prototype.isEmpty = function(x, y, big) {
+      if (big == null) {
+        big = false;
+      }
+      if (big) {
+        if (this.val(x, y) === false || this.val(x + 1, y) === false || this.val(x, y + 1) === false || this.val(x + 1, y + 1) === false) {
+          return false;
+        }
+        return this.isEmpty(x, y) && this.isEmpty(x + 1, y) && this.isEmpty(x, y + 1) && this.isEmpty(x + 1, y + 1);
+      } else {
+        if (this.val(x, y) === false) {
+          return false;
+        }
+        return this.val(x, y) === "." || this.val(x, y) === "";
+      }
     };
 
     Grid.prototype.setVal = function(x, y, value) {
@@ -71,6 +91,37 @@
       return this.set({
         "data": data
       });
+    };
+
+    Grid.prototype.getRandomEmptySpot = function(big) {
+      var cnt, i, j, try_x, try_y, x, y, _i, _j, _k, _l, _len, _len1, _ref, _ref1, _results, _results1;
+      cnt = 0;
+      try_x = _.shuffle((function() {
+        _results = [];
+        for (var _i = 0, _ref = config.grid_size.x - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this));
+      try_y = _.shuffle((function() {
+        _results1 = [];
+        for (var _j = 0, _ref1 = config.grid_size.y - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; 0 <= _ref1 ? _j++ : _j--){ _results1.push(_j); }
+        return _results1;
+      }).apply(this));
+      for (_k = 0, _len = try_x.length; _k < _len; _k++) {
+        i = try_x[_k];
+        for (_l = 0, _len1 = try_y.length; _l < _len1; _l++) {
+          j = try_y[_l];
+          x = try_x[i];
+          y = try_y[j];
+          cnt++;
+          if (this.isEmpty(x, y, big)) {
+            return {
+              "x": x,
+              "y": y
+            };
+          }
+        }
+      }
+      return false;
     };
 
     Grid.prototype.setRegion = function(region) {
@@ -89,16 +140,50 @@
       return this.setVal(x, y, "R");
     };
 
+    Grid.prototype.emptyGrid = function() {
+      var data, i, _i, _ref;
+      console.log("emptyGrid");
+      data = new Array();
+      for (i = _i = 0, _ref = config.grid_size.x * config.grid_size.y - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        data[i] = ".";
+      }
+      return this.set({
+        "data": data
+      });
+    };
+
     Grid.prototype.fillWithBlocks = function() {
-      var bigBlocks, blocks, freeBig, freeSmall, leave_free, smallBlocks;
+      var bigBlocks, blocks, i, maxFreeBig, maxFreeSmall, smallBlocks, spot, _i, _j, _ref, _ref1, _results;
       blocks = this.get("blocks");
-      freeBig = this.freeBigSpots();
-      freeSmall = this.freeSmallSpots();
-      console.log("blocks: " + blocks.length, "      free:  big " + freeBig + "   small " + freeSmall);
-      leave_free = blocks.length <= freeBig ? config.grid_free.big : 0;
-      bigBlocks = Math.max(0, Math.min(blocks.length, freeBig - leave_free));
+      maxFreeBig = Math.min(blocks.length, this.freeBigSpots());
+      maxFreeSmall = this.freeSmallSpots();
+      bigBlocks = Math.min(blocks.length, Math.floor((maxFreeSmall - blocks.length) / (4 - 1)));
+      smallBlocks = Math.max(0, Math.min(blocks.length - bigBlocks, maxFreeSmall - bigBlocks * 4));
+      for (i = _i = 0, _ref = bigBlocks - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        spot = this.getRandomEmptySpot(true);
+        if (spot !== false) {
+          this.setVal(spot.x, spot.y, "B");
+          this.setVal(spot.x + 1, spot.y, "b");
+          this.setVal(spot.x, spot.y + 1, "b");
+          this.setVal(spot.x + 1, spot.y + 1, "b");
+        } else {
+          console.log("not enough free big spots found");
+          bigBlocks = i;
+          break;
+        }
+      }
       smallBlocks = blocks.length - bigBlocks;
-      return console.log("big: " + bigBlocks + "  small: " + smallBlocks);
+      _results = [];
+      for (i = _j = 0, _ref1 = smallBlocks - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+        spot = this.getRandomEmptySpot();
+        if (spot !== false) {
+          _results.push(this.setVal(spot.x, spot.y, "S"));
+        } else {
+          console.log("not enough free small spots found");
+          break;
+        }
+      }
+      return _results;
     };
 
     Grid.prototype.clearRegions = function() {
@@ -122,7 +207,7 @@
     };
 
     Grid.prototype.freeSmallSpots = function() {
-      return (config.grid_size.x * config.grid_size.y) - this.freeBigSpots() * 4;
+      return (config.grid_size.x * config.grid_size.y) - this.numActiveRegions() * (config.region_size.x * config.region_size.y);
     };
 
     Grid.prototype.freeBigSpots = function() {
@@ -156,6 +241,10 @@
       if (top === 2 && bottom === 2) {
         return 2 * 3 + 4;
       }
+    };
+
+    Grid.prototype.numActiveRegions = function() {
+      return this.get('regions').getActiveRegions().length;
     };
 
     return Grid;

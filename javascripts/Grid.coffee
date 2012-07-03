@@ -17,15 +17,14 @@ class Grid extends Backbone.Model
 
 
 	update: () ->
-		this.clearRegions()
-
+		this.emptyGrid()
+		
 		activeRegions = this.get('regions').getActiveRegions()
 		this.setRegion region for region in activeRegions
 
-		this.fillWithBlocks();
+		this.fillWithBlocks()
 
 		this.trigger "change:data"
-
 
 	regionsChange: (model, options) ->
 		that = this
@@ -36,11 +35,25 @@ class Grid extends Backbone.Model
 			console.log "regions", _.map active, (element) -> element.get('position')
 
 			that.update()
-		, 0
+		, 0 
+
 		
 	val: (x,y) ->
+		if x < 0 or y < 0 or x > config.grid_size.x-1 or y > config.grid_size.y-1
+			return false
+
 		data = this.get("data")
-		data[ y * config.grid_size.x + x]
+		data[ y * config.grid_size.x + x ]
+
+	isEmpty: (x,y,big = false) ->
+		if big
+			if this.val(x,y) == false or this.val(x+1,y) == false or this.val(x,y+1) == false or this.val(x+1,y+1) == false
+				return false	
+			return this.isEmpty(x,y) and this.isEmpty(x+1,y) and this.isEmpty(x,y+1) and this.isEmpty(x+1,y+1)
+		else
+			if this.val(x,y) == false
+				return false
+			return this.val(x,y) == "." or this.val(x,y) == ""
 
 	setVal: (x,y,value) ->
 		data = this.get("data")
@@ -48,6 +61,23 @@ class Grid extends Backbone.Model
 
 		this.set "data": data
 
+	getRandomEmptySpot: (big) ->
+		cnt = 0
+		try_x = _.shuffle [0..config.grid_size.x-1]
+		try_y = _.shuffle [0..config.grid_size.y-1]
+
+		for i in try_x
+			for j in try_y
+				x = try_x[i]
+				y = try_y[j]
+				cnt++
+				#console.log "try", x, y, this.isEmpty(x,y,big)
+				if this.isEmpty(x,y,big)
+					#console.log "found with #{cnt} tries"
+					return {"x": x, "y": y}
+		false
+
+		
 	setRegion: (region) ->
 		x = config.region_positions[region.get("position")].x
 		y = config.region_positions[region.get("position")].y
@@ -63,21 +93,45 @@ class Grid extends Backbone.Model
 				this.setVal i,j,"r"
 		this.setVal x,y,"R"
 
+	emptyGrid: () ->
+		console.log "emptyGrid"
+		data = new Array();
+		for i in [0..(config.grid_size.x*config.grid_size.y-1)]
+			data[i] = "."
+		this.set "data" : data
+
 	fillWithBlocks: () ->
 		blocks = this.get("blocks")
-		freeBig = this.freeBigSpots()
-		freeSmall = this.freeSmallSpots()
+		maxFreeBig = Math.min(blocks.length, this.freeBigSpots() )
+		maxFreeSmall = this.freeSmallSpots()
 
-		console.log "blocks: " + blocks.length, "      free:  big " + freeBig + "   small " + freeSmall
+		bigBlocks = Math.min blocks.length, Math.floor (maxFreeSmall - blocks.length) / (4-1)
+		smallBlocks = Math.max 0, Math.min blocks.length - bigBlocks, maxFreeSmall - bigBlocks*4
 
-		# always leave 2 big blocks free
-
-		leave_free = if blocks.length <= freeBig then config.grid_free.big else 0
-		bigBlocks = Math.max( 0, Math.min( blocks.length, freeBig - leave_free ) )
+		# big first
+		for i in [0..bigBlocks-1]
+			spot = this.getRandomEmptySpot(true)
+			unless spot == false
+				this.setVal(spot.x,spot.y,"B")
+				this.setVal(spot.x+1,spot.y,"b")
+				this.setVal(spot.x,spot.y+1,"b")
+				this.setVal(spot.x+1,spot.y+1,"b")
+			else
+				# no free big spots found
+				console.log "not enough free big spots found"
+				bigBlocks = i
+				break
+		
+		# small blocks second
 		smallBlocks = blocks.length - bigBlocks
-
-		console.log "big: " + bigBlocks + "  small: " + smallBlocks
-
+		for i in [0..smallBlocks-1]
+			spot = this.getRandomEmptySpot()
+			unless spot == false
+				this.setVal(spot.x,spot.y,"S")
+			else
+				# no free small spots found
+				console.log "not enough free small spots found"
+				break
 
 
 	clearRegions: () ->
@@ -89,7 +143,7 @@ class Grid extends Backbone.Model
 					this.setVal x,y,"b"
 
 	freeSmallSpots: () ->
-		(config.grid_size.x * config.grid_size.y) - this.freeBigSpots()*4
+		(config.grid_size.x * config.grid_size.y) - this.numActiveRegions()*(config.region_size.x*config.region_size.y)
 
 	freeBigSpots: () ->
 		top = this.get('regions').active_top
@@ -113,6 +167,9 @@ class Grid extends Backbone.Model
 			return 2*4 + 4
 		if top == 2 && bottom == 2
 			return 2*3 + 4
+
+	numActiveRegions: () ->
+		this.get('regions').getActiveRegions().length
 
 class GridView extends Backbone.View
 	className: "grid"

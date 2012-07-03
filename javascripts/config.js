@@ -13,9 +13,6 @@
       x: 14,
       y: 8
     },
-    grid_free: {
-      big: 2
-    },
     region_size: {
       x: 6,
       y: 3
