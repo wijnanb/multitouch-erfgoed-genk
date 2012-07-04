@@ -12,8 +12,7 @@
         regions: regionCollection
       });
       gridView = new GridView({
-        model: grid,
-        el: $("#gridView")
+        model: grid
       }).render();
       multiTouch = new MultiTouch({
         el: $("body").get(0)

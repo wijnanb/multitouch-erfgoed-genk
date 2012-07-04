@@ -61,7 +61,7 @@
     };
 
     RegionCollection.prototype.reset = function() {
-      var button, position, region, _i, _len, _ref, _results;
+      var position, region, _i, _len, _ref, _results;
       _ref = this.positions;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -70,10 +70,12 @@
           'position': position
         });
         this.add(region);
-        button = new RegionButton({
+        new RegionView({
           model: region
-        });
-        _results.push(button.render().$el.appendTo($("#regions")));
+        }).render();
+        _results.push(new RegionButton({
+          model: region
+        }).render());
       }
       return _results;
     };
@@ -206,10 +208,14 @@
 
     RegionView.prototype.initialize = function() {
       _.bindAll(this);
-      return this.collection = this.options.collection;
+      this.collection = this.options.collection;
+      this.model.on("change:active", this.render);
+      this.$el.appendTo($("#page"));
+      return this.$el.addClass(this.model.get("position"));
     };
 
     RegionView.prototype.render = function() {
+      this.$el.toggleClass("active", this.model.get("active"));
       return this;
     };
 
@@ -236,11 +242,12 @@
     RegionButton.prototype.initialize = function() {
       _.bindAll(this);
       this.collection = this.options.collection;
-      return this.model.on("change:sensor", this.onSensorChanged);
+      this.model.on("change:sensor", this.onSensorChanged);
+      this.$el.addClass(this.model.get("position"));
+      return this.$el.appendTo($("#regions"));
     };
 
     RegionButton.prototype.render = function() {
-      this.$el.addClass(this.model.get("position"));
       this.$el.html("<div class=\"piece horizontal\"></div>\n<div class=\"piece vertical\"></div>");
       return this;
     };

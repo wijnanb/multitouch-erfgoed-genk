@@ -41,7 +41,9 @@
         this.setRegion(region);
       }
       this.fillWithBlocks();
-      return this.trigger("change:data");
+      this.trigger("change:data");
+      console.log("grid positions: ", this.getGridPositions());
+      return this.get("blocks").setBlocksToGridPositions(this.getGridPositions());
     };
 
     Grid.prototype.regionsChange = function(model, options) {
@@ -243,6 +245,24 @@
       }
     };
 
+    Grid.prototype.getGridPositions = function() {
+      var positions, value, x, y, _i, _j, _ref, _ref1;
+      positions = [];
+      for (x = _i = 0, _ref = config.grid_size.x - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; x = 0 <= _ref ? ++_i : --_i) {
+        for (y = _j = 0, _ref1 = config.grid_size.y - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; y = 0 <= _ref1 ? ++_j : --_j) {
+          value = this.val(x, y);
+          if (_.include(["B", "S"], value)) {
+            positions.push({
+              "x": x,
+              "y": y,
+              "value": value
+            });
+          }
+        }
+      }
+      return positions;
+    };
+
     Grid.prototype.numActiveRegions = function() {
       return this.get('regions').getActiveRegions().length;
     };
@@ -261,9 +281,12 @@
 
     GridView.prototype.className = "grid";
 
+    GridView.prototype.id = "gridView";
+
     GridView.prototype.initialize = function() {
       _.bindAll(this);
-      return this.model.on("change:data", this.render, this);
+      this.model.on("change:data", this.render, this);
+      return this.$el.insertAfter($("#page"));
     };
 
     GridView.prototype.render = function() {

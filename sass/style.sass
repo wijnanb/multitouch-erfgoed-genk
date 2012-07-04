@@ -8,7 +8,7 @@ $scheme-orange: #AB6937
 $scheme-yellow: #D4A960
 
 body
-	background-color: #222
+	background-color: #666
 	font-family: "Helvetica Neue", Helvetica, Arial
 	font-size: 14px
 	line-height: 17px
@@ -19,35 +19,41 @@ body
 	z-index: 0
 	visibility: hidden
 
+#screen
+	width: 100%
+	height: 100%
+	max-width: 1920px
+	max-height: 1080px
+	background-color: black
+	position: absolute
+
 #page
 	background-color: black
 	position: absolute
-	top: 30px
-	left: 30px
-	bottom: 30px
-	right: 30px
+	top: 20px
+	left: 45px
+	bottom: 20px
+	right: 45px
 	overflow: hidden
-
-#blocks
-	width: 100%
-	height: 100%
-	position: absolute
 
 .block
-	width: 200px
-	height: 200px
+	width: 256px
+	height: 256px
 	position: absolute
 	overflow: hidden
-	margin: 5px
+	margin: 0px
 	z-index: 1
-	border: 2px solid black
+	border: 2px solid transparent
+	&.small
+		width: 126px
+		height: 126px
 	&.active
-		border: 2px solid yellow
+		border: 2px solid yellow	
 	.inner
 		background-color: black
 		background-image: url(../images/content/example_block.jpg)
-		width: 200px
-		height: 200px
+		width: 252px
+		height: 252px
 		overflow: hidden
 		.label
 			background-color: $scheme-red
@@ -110,16 +116,46 @@ body
 				width: 450px
 				left: 50px
 
+
+.region
+	opacity: 0
+	border: 3px dotted yellow
+	margin: 2px
+	width: 770px
+	height: 380px
+	position: absolute
+	&.active
+		opacity: 1
+		-webkit-transition: opacity 0.8s linear
+	&.TOP_LEFT
+		top: 0px
+		left: 0px
+	&.TOP
+		top: 0px
+		left: 520px
+	&.TOP_RIGHT
+		top: 0px
+		right: 0px
+	&.BOTTOM_LEFT
+		bottom: 0px
+		left: 0px
+	&.BOTTOM
+		bottom: 0px
+		left: 520px
+	&.BOTTOM_RIGHT
+		bottom: 0px
+		right: 0px
+
 .region-button
 	.piece
 		position: absolute
 		background-color: $scheme-yellow
-		margin: 5px
+		margin: 2px
 		&.horizontal
-			height: 20px
+			height: 16px
 			width: 200px
 		&.vertical
-			width: 20px
+			width: 16px
 			height: 150px
 
 	&.active .piece
@@ -127,52 +163,52 @@ body
 
 	&.TOP_LEFT
 		.horizontal
-			width: 200px
+			width: 400px
 		.vertical
-			height: 150px
+			height: 350px
 
 	&.TOP
 		.horizontal
 			left: 50%
-			margin-left: -150px
-			width: 300px
+			margin-left: -250px
+			width: 500px
 		.vertical
 			display: none
 
 	&.TOP_RIGHT
 		.horizontal
-			width: 200px
+			width: 400px
 			right: 0px
 		.vertical
 			right: 0px
-			height: 150px
+			height: 350px
 
 	&.BOTTOM_LEFT
 		.horizontal
 			bottom: 0px
-			width: 200px
+			width: 400px
 		.vertical
-			height: 150px
+			height: 350px
 			bottom: 0px
 
 	&.BOTTOM
 		.horizontal
 			left: 50%
-			margin-left: -150px
-			width: 300px
+			margin-left: -250px
+			width: 500px
 			bottom: 0px
 		.vertical
 			display: none
 
 	&.BOTTOM_RIGHT
 		.horizontal
-			width: 200px
+			width: 400px
 			right: 0px
 			bottom: 0px
 		.vertical
 			right: 0px
 			bottom: 0px
-			height: 150px
+			height: 350px
 
 #gridView
 	position: absolute

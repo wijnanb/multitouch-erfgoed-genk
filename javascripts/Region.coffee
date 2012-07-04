@@ -36,8 +36,9 @@ class RegionCollection extends Backbone.Collection
 			region = new Region 'position' : position
 			this.add region
 
-			button = new RegionButton model: region
-			button.render().$el.appendTo $("#regions")
+			new RegionView( model: region ).render()
+			new RegionButton( model: region ).render()
+
 
 	onSensorChanged: (model) ->
 		oldSensors = this.sensors
@@ -119,11 +120,15 @@ class RegionView extends Backbone.View
 	className: "region"
 	
 	initialize: () ->
-		_.bindAll this 
+		_.bindAll this
 		this.collection = this.options.collection
+		this.model.on "change:active", this.render
+
+		this.$el.appendTo $("#page")
+		this.$el.addClass this.model.get "position"
 
 	render: () ->
-
+		this.$el.toggleClass "active", this.model.get "active"
 		this
 
 
@@ -142,10 +147,10 @@ class RegionButton extends Backbone.View
 		_.bindAll this
 		this.collection = this.options.collection
 		this.model.on "change:sensor", this.onSensorChanged
+		this.$el.addClass this.model.get "position"
+		this.$el.appendTo $("#regions")
 
 	render: () ->
-		this.$el.addClass this.model.get "position"
-
 		this.$el.html """
 			<div class="piece horizontal"></div>
 			<div class="piece vertical"></div>

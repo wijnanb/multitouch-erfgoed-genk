@@ -25,6 +25,9 @@ class Grid extends Backbone.Model
 		this.fillWithBlocks()
 
 		this.trigger "change:data"
+		console.log "grid positions: ", this.getGridPositions()
+
+		this.get("blocks").setBlocksToGridPositions this.getGridPositions()
 
 	regionsChange: (model, options) ->
 		that = this
@@ -168,15 +171,27 @@ class Grid extends Backbone.Model
 		if top == 2 && bottom == 2
 			return 2*3 + 4
 
+	getGridPositions: () ->
+		positions = []
+
+		for x in [0..config.grid_size.x-1]
+			for y in [0..config.grid_size.y-1]
+				value = this.val x,y
+				if _.include ["B","S"], value
+					positions.push { "x": x, "y": y, "value": value }
+		positions
+
 	numActiveRegions: () ->
 		this.get('regions').getActiveRegions().length
 
 class GridView extends Backbone.View
 	className: "grid"
+	id: "gridView"
 
 	initialize: () ->
 		_.bindAll this
 		this.model.on "change:data", this.render, this
+		this.$el.insertAfter $("#page")
 
 	render: () ->
 		table = $("<table></table>")

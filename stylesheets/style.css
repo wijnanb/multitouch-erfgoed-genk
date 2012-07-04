@@ -213,7 +213,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 
 /* line 10, ../sass/style.sass */
 body {
-  background-color: #222222;
+  background-color: #666666;
   font-family: "Helvetica Neue", Helvetica, Arial;
   font-size: 14px;
   line-height: 17px;
@@ -228,46 +228,54 @@ body {
 }
 
 /* line 22, ../sass/style.sass */
+#screen {
+  width: 100%;
+  height: 100%;
+  max-width: 1920px;
+  max-height: 1080px;
+  background-color: black;
+  position: absolute;
+}
+
+/* line 30, ../sass/style.sass */
 #page {
   background-color: black;
   position: absolute;
-  top: 30px;
-  left: 30px;
-  bottom: 30px;
-  right: 30px;
+  top: 20px;
+  left: 45px;
+  bottom: 20px;
+  right: 45px;
   overflow: hidden;
 }
 
-/* line 31, ../sass/style.sass */
-#blocks {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-
-/* line 36, ../sass/style.sass */
+/* line 39, ../sass/style.sass */
 .block {
-  width: 200px;
-  height: 200px;
+  width: 256px;
+  height: 256px;
   position: absolute;
   overflow: hidden;
-  margin: 5px;
+  margin: 0px;
   z-index: 1;
-  border: 2px solid black;
+  border: 2px solid transparent;
 }
-/* line 44, ../sass/style.sass */
+/* line 47, ../sass/style.sass */
+.block.small {
+  width: 126px;
+  height: 126px;
+}
+/* line 50, ../sass/style.sass */
 .block.active {
   border: 2px solid yellow;
 }
-/* line 46, ../sass/style.sass */
+/* line 52, ../sass/style.sass */
 .block .inner {
   background-color: black;
   background-image: url(../images/content/example_block.jpg);
-  width: 200px;
-  height: 200px;
+  width: 252px;
+  height: 252px;
   overflow: hidden;
 }
-/* line 52, ../sass/style.sass */
+/* line 58, ../sass/style.sass */
 .block .inner .label {
   background-color: #8c3b3b;
   position: absolute;
@@ -277,24 +285,24 @@ body {
   text-align: right;
   padding: 10px;
 }
-/* line 60, ../sass/style.sass */
+/* line 66, ../sass/style.sass */
 .block .inner .label .date {
   color: #ab6937;
 }
-/* line 62, ../sass/style.sass */
+/* line 68, ../sass/style.sass */
 .block .inner .label h2 {
   color: white;
   font-size: 16px;
   line-height: 19px;
 }
 
-/* line 67, ../sass/style.sass */
+/* line 73, ../sass/style.sass */
 .folder {
   position: absolute;
   left: 300px;
   top: 20px;
 }
-/* line 72, ../sass/style.sass */
+/* line 78, ../sass/style.sass */
 .folder .inner .photo {
   position: absolute;
   top: 20px;
@@ -302,17 +310,17 @@ body {
   width: 400px;
   border: 10px solid white;
 }
-/* line 78, ../sass/style.sass */
+/* line 84, ../sass/style.sass */
 .folder .inner .photo img {
   width: 100%;
 }
-/* line 80, ../sass/style.sass */
+/* line 86, ../sass/style.sass */
 .folder .inner .details {
   position: absolute;
   top: 330px;
   left: 20px;
 }
-/* line 84, ../sass/style.sass */
+/* line 90, ../sass/style.sass */
 .folder .inner .details h1 {
   position: absolute;
   background-color: rgba(171, 105, 55, 0.6);
@@ -324,7 +332,7 @@ body {
   padding: 6px 8px;
   width: 300px;
 }
-/* line 94, ../sass/style.sass */
+/* line 100, ../sass/style.sass */
 .folder .inner .details .description {
   position: absolute;
   background-color: white;
@@ -337,7 +345,7 @@ body {
   width: 450px;
   height: 160px;
 }
-/* line 105, ../sass/style.sass */
+/* line 111, ../sass/style.sass */
 .folder .inner .details .date {
   position: absolute;
   top: 225px;
@@ -347,89 +355,134 @@ body {
   left: 50px;
 }
 
-/* line 114, ../sass/style.sass */
+/* line 120, ../sass/style.sass */
+.region {
+  opacity: 0;
+  border: 3px dotted yellow;
+  margin: 2px;
+  width: 770px;
+  height: 380px;
+  position: absolute;
+}
+/* line 127, ../sass/style.sass */
+.region.active {
+  opacity: 1;
+  -webkit-transition: opacity 0.8s linear;
+}
+/* line 130, ../sass/style.sass */
+.region.TOP_LEFT {
+  top: 0px;
+  left: 0px;
+}
+/* line 133, ../sass/style.sass */
+.region.TOP {
+  top: 0px;
+  left: 520px;
+}
+/* line 136, ../sass/style.sass */
+.region.TOP_RIGHT {
+  top: 0px;
+  right: 0px;
+}
+/* line 139, ../sass/style.sass */
+.region.BOTTOM_LEFT {
+  bottom: 0px;
+  left: 0px;
+}
+/* line 142, ../sass/style.sass */
+.region.BOTTOM {
+  bottom: 0px;
+  left: 520px;
+}
+/* line 145, ../sass/style.sass */
+.region.BOTTOM_RIGHT {
+  bottom: 0px;
+  right: 0px;
+}
+
+/* line 150, ../sass/style.sass */
 .region-button .piece {
   position: absolute;
   background-color: #d4a960;
-  margin: 5px;
+  margin: 2px;
 }
-/* line 118, ../sass/style.sass */
+/* line 154, ../sass/style.sass */
 .region-button .piece.horizontal {
-  height: 20px;
+  height: 16px;
   width: 200px;
 }
-/* line 121, ../sass/style.sass */
+/* line 157, ../sass/style.sass */
 .region-button .piece.vertical {
-  width: 20px;
+  width: 16px;
   height: 150px;
 }
-/* line 125, ../sass/style.sass */
+/* line 161, ../sass/style.sass */
 .region-button.active .piece {
   background-color: yellow;
 }
-/* line 129, ../sass/style.sass */
+/* line 165, ../sass/style.sass */
 .region-button.TOP_LEFT .horizontal {
-  width: 200px;
+  width: 400px;
 }
-/* line 131, ../sass/style.sass */
+/* line 167, ../sass/style.sass */
 .region-button.TOP_LEFT .vertical {
-  height: 150px;
+  height: 350px;
 }
-/* line 135, ../sass/style.sass */
+/* line 171, ../sass/style.sass */
 .region-button.TOP .horizontal {
   left: 50%;
-  margin-left: -150px;
-  width: 300px;
+  margin-left: -250px;
+  width: 500px;
 }
-/* line 139, ../sass/style.sass */
+/* line 175, ../sass/style.sass */
 .region-button.TOP .vertical {
   display: none;
 }
-/* line 143, ../sass/style.sass */
+/* line 179, ../sass/style.sass */
 .region-button.TOP_RIGHT .horizontal {
-  width: 200px;
+  width: 400px;
   right: 0px;
 }
-/* line 146, ../sass/style.sass */
+/* line 182, ../sass/style.sass */
 .region-button.TOP_RIGHT .vertical {
   right: 0px;
-  height: 150px;
+  height: 350px;
 }
-/* line 151, ../sass/style.sass */
+/* line 187, ../sass/style.sass */
 .region-button.BOTTOM_LEFT .horizontal {
   bottom: 0px;
-  width: 200px;
+  width: 400px;
 }
-/* line 154, ../sass/style.sass */
+/* line 190, ../sass/style.sass */
 .region-button.BOTTOM_LEFT .vertical {
-  height: 150px;
+  height: 350px;
   bottom: 0px;
 }
-/* line 159, ../sass/style.sass */
+/* line 195, ../sass/style.sass */
 .region-button.BOTTOM .horizontal {
   left: 50%;
-  margin-left: -150px;
-  width: 300px;
+  margin-left: -250px;
+  width: 500px;
   bottom: 0px;
 }
-/* line 164, ../sass/style.sass */
+/* line 200, ../sass/style.sass */
 .region-button.BOTTOM .vertical {
   display: none;
 }
-/* line 168, ../sass/style.sass */
+/* line 204, ../sass/style.sass */
 .region-button.BOTTOM_RIGHT .horizontal {
-  width: 200px;
+  width: 400px;
   right: 0px;
   bottom: 0px;
 }
-/* line 172, ../sass/style.sass */
+/* line 208, ../sass/style.sass */
 .region-button.BOTTOM_RIGHT .vertical {
   right: 0px;
   bottom: 0px;
-  height: 150px;
+  height: 350px;
 }
 
-/* line 177, ../sass/style.sass */
+/* line 213, ../sass/style.sass */
 #gridView {
   position: absolute;
   width: 280px;
@@ -442,12 +495,12 @@ body {
   color: black;
   z-index: 2000;
 }
-/* line 188, ../sass/style.sass */
+/* line 224, ../sass/style.sass */
 #gridView table {
   width: 100%;
   height: 100%;
 }
-/* line 191, ../sass/style.sass */
+/* line 227, ../sass/style.sass */
 #gridView table td {
   border: 1px solid #999999;
   text-align: center;

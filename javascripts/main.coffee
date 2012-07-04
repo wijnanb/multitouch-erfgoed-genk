@@ -8,7 +8,7 @@ App = ( ->
 
 		grid = new Grid(blocks: blockCollection, regions: regionCollection)
 		
-		gridView = new GridView(model: grid, el: $("#gridView")).render()
+		gridView = new GridView(model: grid).render()
 
 		multiTouch = new MultiTouch( el: $("body").get(0) )
 

@@ -3,8 +3,8 @@ window.config =
 	screen_width: 1920
 	screen_height: 1080
 	block:
-		width: 214
-		height: 214
+		width: 130
+		height: 130
 	grid_size:
 		x: 14
 		y: 8
@@ -23,4 +23,22 @@ window.config =
 		BOTTOM:
 			x: 4, y: 5
 		BOTTOM_RIGHT:
-			x: 10, y:5	
+			x: 10, y:5
+
+
+### calculate block size
+
+width: 1920 - 2*20 = 1880
+height: 1080 - 2x20 = 1040
+
+grid_size: 14x8
+-->  1880/14 = 134,285714286
+-->  1040/8 = 130
+
+1920 - 14*130 = 100 --> 50 marge links en rechts 
+
+==> full block size: 260x260
+
+==> region size: 780x390
+
+###

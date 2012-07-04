@@ -12,10 +12,6 @@
       return Block.__super__.constructor.apply(this, arguments);
     }
 
-    Block.prototype.LARGE = "large";
-
-    Block.prototype.SMALL = "small";
-
     Block.prototype.defaults = {
       position: {
         x: 0,
@@ -27,20 +23,21 @@
       },
       active: false,
       dragging: false,
-      size: Block.LARGE,
+      size: BIG,
       hover_position: false,
       under: false,
       transform_translation: null,
       transform_scale: null,
       transform_rotation: null,
-      transition_translation: null,
+      transition_translation: "-webkit-transform 0.4s ease-in-out",
       transition_scale: null,
       empty: true
     };
 
     Block.prototype.initialize = function() {
       this.on("change:hover_position", this.onHover, this);
-      return this.on("change:under", this.onUnder, this);
+      this.on("change:under", this.onUnder, this);
+      return this.on("change:dragging", this.onDragging, this);
     };
 
     Block.prototype.nearestPosition = function() {
@@ -70,14 +67,8 @@
       });
     };
 
-    Block.prototype.onHover = function() {};
-
-    Block.prototype.onUnder = function() {
-      if (this.get('under')) {
-        return this.set('size', this.SMALL);
-      } else {
-        return this.set('size', this.LARGE);
-      }
+    Block.prototype.onDragging = function() {
+      return this.set("transition_translation", this.get("dragging") ? "" : "-webkit-transform 0.4s ease-in-out");
     };
 
     return Block;
@@ -98,7 +89,8 @@
       _.bindAll(this);
       this.contentCollection = new ContentCollection();
       this.contentCollection.on("reset", this.contentReset);
-      return this.on("change:hover_position", this.onHover);
+      this.on("change:hover_position", this.onHover);
+      return this.on("dropped", this.onDropped, this);
     };
 
     BlockCollection.prototype.contentReset = function() {
@@ -106,41 +98,60 @@
       that = this;
       this.contentCollection.each(function(element, index, list) {
         var attributes, block, blockView;
-        that.num_block_x = Math.floor(config.screen_width / config.block.width);
-        that.num_block_y = Math.floor(config.screen_height / config.block.height);
         attributes = {
           content: element,
           position: {
-            x: index % that.num_block_x,
-            y: Math.floor(index / that.num_block_x)
+            x: index % config.grid_size.x,
+            y: Math.floor(index / config.grid_size.x)
           }
         };
         block = new Block(attributes);
         that.add(block);
-        blockView = new BlockView({
+        return blockView = new BlockView({
           model: block,
           collection: that
-        });
-        return blockView.render().$el.appendTo($("#blocks"));
+        }).render();
       });
       return this.trigger("contentReset");
     };
 
     BlockCollection.prototype.onHover = function(model) {
-      var neighbours, over;
-      if (model.get("hover_position") !== false) {
-        over = this.getBlockOnPosition(model.get("hover_position"));
-        neighbours = this.getNeightboursForPosition(model.nearestPosition());
-        _.each(neighbours, function(element, index) {
-          return element.set({
-            'under': true
-          });
+      var affected;
+      affected = this.getAffectedBlocksUnderHoverPosition(model);
+      _.each(affected, function(element, index) {
+        return element.set({
+          'under': true
         });
-        return _.each(_.difference(this.models, neighbours), function(element, index) {
-          return element.set({
-            'under': false
-          });
+      });
+      return _.each(_.difference(this.models, affected), function(element, index) {
+        return element.set({
+          'under': false
         });
+      });
+    };
+
+    BlockCollection.prototype.onDropped = function(model) {
+      var affected;
+      affected = this.getAffectedBlocksUnderHoverPosition(model);
+      console.log("affected", affected);
+      model.positionOnGrid();
+      return model.set({
+        'hover_position': false
+      });
+    };
+
+    BlockCollection.prototype.getAffectedBlocksUnderHoverPosition = function(model) {
+      var affected, over;
+      if (model.get("hover_position") === false) {
+        return [];
+      }
+      over = this.getBlockOnPosition(model.get("hover_position"));
+      if (BIG === model.get("size")) {
+        return affected = this.getNeightboursUnderBigBlock(model.nearestPosition());
+      } else if (over) {
+        return affected = [over];
+      } else {
+        return affected = [];
       }
     };
 
@@ -154,6 +165,11 @@
           if (element_position.x === position.x && element_position.y === position.y) {
             block = element;
           }
+          if (BIG === element.get("size")) {
+            if ((element_position.x === position.x - 1 && element_position.y === position.y) || (element_position.x === position.x && element_position.y === position.y - 1) || (element_position.x === position.x - 1 && element_position.y === position.y - 1)) {
+              return block = element;
+            }
+          }
         }
       });
       return block;
@@ -162,9 +178,9 @@
     BlockCollection.prototype.getNeightboursForPosition = function(position) {
       var element, end_x, end_y, neighbours, start_x, start_y, x, y, _i, _j;
       start_x = Math.max(0, position.x - 1);
-      end_x = Math.min(position.x + 1, this.num_block_x - 1);
+      end_x = Math.min(position.x + 1, config.grid_size.x - 1);
       start_y = Math.max(0, position.y - 1);
-      end_y = Math.min(position.y + 1, this.num_block_y - 1);
+      end_y = Math.min(position.y + 1, config.grid_size.y - 1);
       neighbours = [];
       for (x = _i = start_x; start_x <= end_x ? _i <= end_x : _i >= end_x; x = start_x <= end_x ? ++_i : --_i) {
         for (y = _j = start_y; start_y <= end_y ? _j <= end_y : _j >= end_y; y = start_y <= end_y ? ++_j : --_j) {
@@ -176,7 +192,66 @@
           }
         }
       }
-      return neighbours;
+      return _.uniq(neighbours);
+    };
+
+    BlockCollection.prototype.getNeightboursUnderBigBlock = function(position) {
+      var element, end_x, end_y, neighbours, start_x, start_y, x, y, _i, _j;
+      start_x = position.x;
+      end_x = Math.min(position.x + 1, config.grid_size.x - 1);
+      start_y = position.y;
+      end_y = Math.min(position.y + 1, config.grid_size.y - 1);
+      neighbours = [];
+      for (x = _i = start_x; start_x <= end_x ? _i <= end_x : _i >= end_x; x = start_x <= end_x ? ++_i : --_i) {
+        for (y = _j = start_y; start_y <= end_y ? _j <= end_y : _j >= end_y; y = start_y <= end_y ? ++_j : --_j) {
+          if (element = this.getBlockOnPosition({
+            x: x,
+            y: y
+          })) {
+            neighbours.push(element);
+          }
+        }
+      }
+      return _.uniq(neighbours);
+    };
+
+    BlockCollection.prototype.setBlocksToGridPositions = function(positions) {
+      var blocks;
+      blocks = this.getBlocksOrdered();
+      return _.each(blocks, function(element, index) {
+        var pos;
+        pos = positions[index];
+        element.set("position", {
+          "x": pos.x,
+          "y": pos.y
+        });
+        return element.set("size", pos.value === "B" ? BIG : SMALL);
+      });
+    };
+
+    BlockCollection.prototype.getBlocksOrdered = function() {
+      return this.models.sort(function(a, b) {
+        var pos_a, pos_b;
+        pos_a = a.get("position");
+        pos_b = b.get("position");
+        if (pos_a.x < pos_b.x) {
+          return -1;
+        }
+        if (pos_a.x > pos_b.x) {
+          return 1;
+        }
+        if (pos_a.x === pos_b.x) {
+          if (pos_a.y < pos_b.y) {
+            return -1;
+          }
+          if (pos_a.y > pos_b.y) {
+            return 1;
+          }
+          if (pos_a.y === pos_b.y) {
+            return 0;
+          }
+        }
+      });
     };
 
     return BlockCollection;
@@ -199,11 +274,15 @@
       this.model.on("change:drag_offset", this.move);
       this.model.on("change:position", this.move);
       this.model.on("change:dragging", this.toggleZIndex);
+      this.model.on("change:under", this.onChangeUnder);
       this.model.on("change:size", this.onChangeSize);
       this.model.on("change:transform_translation", this.transform);
       this.model.on("change:transform_scale", this.transform);
       this.model.on("change:transform_rotation", this.transform);
-      return this.collection = this.options.collection;
+      this.model.on("change:transition_translation", this.transform);
+      this.model.on("change:transition_scale", this.transform);
+      this.collection = this.options.collection;
+      return this.$el.appendTo($("#page"));
     };
 
     BlockView.prototype.events = {
@@ -215,8 +294,11 @@
 
     BlockView.prototype.ontap = function(event) {
       console.log("tap", this.model.get('content').get('title'));
-      return this.model.set({
+      this.model.set({
         'active': true
+      });
+      return this.model.set({
+        "size": BIG === this.model.get("size") ? SMALL : BIG
       });
     };
 
@@ -235,16 +317,7 @@
       this.model.set({
         'dragging': false
       });
-      this.model.positionOnGrid();
-      this.model.set({
-        'hover_position': false
-      });
-      console.log(this.collection);
-      return this.collection.each(function(element, index) {
-        return element.set({
-          'under': false
-        });
-      });
+      return this.model.trigger("dropped", this.model);
     };
 
     BlockView.prototype.ondrag = function(event) {
@@ -315,35 +388,42 @@
       if (rotation = this.model.get("transform_rotation")) {
         css += "rotate(" + rotation + ") ";
       }
-      if (transition_scale = this.model.get("transition_scale")) {
-        this.$el.children('.inner').css("-webkit-transition", transition_scale);
-      }
+      transition_scale = this.model.get("transition_scale" || "");
+      this.$el.children('.inner').css("-webkit-transition", transition_scale);
       this.$el.children('.inner').css("-webkit-transform", css);
-      if (transition_translation = this.model.get("transition_translation")) {
-        this.$el.css("-webkit-transition", transition_translation);
-      }
-      if (translation = this.model.get("transform_translation")) {
-        return this.$el.css("-webkit-transform", "translate3d(" + translation + ") ");
-      }
+      transition_translation = this.model.get("transition_translation" || "");
+      this.$el.css("-webkit-transition", transition_translation);
+      translation = this.model.get("transform_translation" || "");
+      return this.$el.css("-webkit-transform", "translate3d(" + translation + ") ");
     };
 
     BlockView.prototype.onChangeSize = function() {
-      if (this.model.get("size") === this.model.SMALL) {
-        this.$el.addClass("small");
+      this.model.set({
+        "transition_scale": "all 0.1s ease-out 0s"
+      });
+      return this.setScale();
+    };
+
+    BlockView.prototype.onChangeUnder = function() {
+      this.model.set({
+        "transition_scale": "all 0.5s ease-out 0s"
+      });
+      return this.setScale();
+    };
+
+    BlockView.prototype.setScale = function() {
+      var small;
+      small = this.model.get("size") === SMALL;
+      this.$el.toggleClass("small", small);
+      this.$el.children(".inner").css("-webkit-transform-origin", small ? "top left" : "");
+      if (this.model.get("under")) {
         this.model.set({
-          "transition_scale": "all 0.5s ease-out 0s"
-        });
-        this.model.set({
-          "transform_scale": 0.8
+          "transform_scale": small ? 0.4 : 0.8
         });
         return this.$el.children(".inner").css("opacity", 0.5);
       } else {
-        this.$el.removeClass("small");
         this.model.set({
-          "transition_scale": "all 0.5s ease-out 0s"
-        });
-        this.model.set({
-          "transform_scale": null
+          "transform_scale": small ? 0.5 : null
         });
         return this.$el.children(".inner").css("opacity", "");
       }
