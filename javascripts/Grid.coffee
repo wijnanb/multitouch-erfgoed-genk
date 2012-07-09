@@ -9,27 +9,23 @@ class Grid extends Backbone.Model
 	initialize: () ->
 		this.get("blocks").on "contentReset", this.contentReset, this
 		this.get("regions").on "change:active", this.regionsChange, this
-
+		this.get("blocks").on "change:placed", this.blockPlacedChange, this
+		this.get("blocks").on "dropped", this.blockDropped, this
+		
 		this.set "data" : new Array(config.grid_size.x*config.grid_size.y)
 		
 	contentReset: () ->
+		this.emptyGrid()
 		this.update()
 
-
 	update: () ->
-		this.emptyGrid()
-		
-		activeRegions = this.get('regions').getActiveRegions()
-		this.setRegion region for region in activeRegions
-
 		this.fillWithBlocks()
 
 		this.trigger "change:data"
-		console.log "grid positions: ", this.getGridPositions()
 
 		this.get("blocks").setBlocksToGridPositions this.getGridPositions()
 
-	regionsChange: (model, options) ->
+	regionsChange: (model, value) ->
 		that = this
 		clearTimeout this.regionsChangedTimeout
 		this.regionsChangedTimeout = setTimeout () ->
@@ -37,16 +33,51 @@ class Grid extends Backbone.Model
 			active = that.get('regions').getActiveRegions()
 			console.log "regions", _.map active, (element) -> element.get('position')
 
+			that.get("blocks").each (element, index) -> element.set "placed" : false
+
+			that.emptyGrid()
+		
+			activeRegions = that.get('regions').getActiveRegions()
+			that.setRegion region for region in activeRegions
+
 			that.update()
 		, 0 
 
-		
+	blockPlacedChange: (model, value) ->
+		#remove position from grid when no longer placed
+		if value == false
+			console.log "unplaced", model
+			position = model.get "position"
+			this.empty position.x, position.y
+
+			this.trigger "change:data"
+	
+	blockDropped: (block) ->
+		console.log "Grid.blockDropped", block
+
+		position = block.get "position"
+		size = block.get "size"
+
+		this.setBlock position.x, position.y, size
+		this.trigger "change:data"
+
+		this.update()
+
 	val: (x,y) ->
 		if x < 0 or y < 0 or x > config.grid_size.x-1 or y > config.grid_size.y-1
 			return false
 
 		data = this.get("data")
 		data[ y * config.grid_size.x + x ]
+
+	empty: (x,y) ->
+		if this.val(x,y) == "B"
+			this.setVal x, y, "."
+			this.setVal x+1, y, "."
+			this.setVal x, y+1, "."
+			this.setVal x+1, y+1, "."
+		else if this.val(x,y) == "S"
+			this.setVal x, y, "."
 
 	isEmpty: (x,y,big = false) ->
 		if big
@@ -96,6 +127,19 @@ class Grid extends Backbone.Model
 				this.setVal i,j,"r"
 		this.setVal x,y,"R"
 
+	setBlock: (x,y,size=BIG) ->
+		if size == BIG
+			x = Math.max 0, (Math.min x, config.grid_size.x - 2)
+			y = Math.max 0, (Math.min y, config.grid_size.y - 2)
+			this.setVal(x,y,"B")
+			this.setVal(x+1,y,"b")
+			this.setVal(x,y+1,"b")
+			this.setVal(x+1,y+1,"b")
+		else if size == SMALL
+			x = Math.max 0, (Math.min x, config.grid_size.x - 1)
+			y = Math.max 0, (Math.min y, config.grid_size.y - 1)
+			this.setVal(x,y,"S")
+
 	emptyGrid: () ->
 		console.log "emptyGrid"
 		data = new Array();
@@ -104,21 +148,25 @@ class Grid extends Backbone.Model
 		this.set "data" : data
 
 	fillWithBlocks: () ->
-		blocks = this.get("blocks")
+		blocks = this.get("blocks").getBlocksOrdered true #non-placed blocks only
+
+		return if blocks.length == 0
+
+		alreadyPlaced = this.get("blocks").length - blocks.length
+
 		maxFreeBig = Math.min(blocks.length, this.freeBigSpots() )
 		maxFreeSmall = this.freeSmallSpots()
 
 		bigBlocks = Math.min blocks.length, Math.floor (maxFreeSmall - blocks.length) / (4-1)
 		smallBlocks = Math.max 0, Math.min blocks.length - bigBlocks, maxFreeSmall - bigBlocks*4
 
+		console.log "fill with blocks", blocks, bigBlocks, smallBlocks
+
 		# big first
 		for i in [0..bigBlocks-1]
 			spot = this.getRandomEmptySpot(true)
 			unless spot == false
-				this.setVal(spot.x,spot.y,"B")
-				this.setVal(spot.x+1,spot.y,"b")
-				this.setVal(spot.x,spot.y+1,"b")
-				this.setVal(spot.x+1,spot.y+1,"b")
+				this.setBlock spot.x, spot.y, BIG
 			else
 				# no free big spots found
 				console.log "not enough free big spots found"
@@ -130,7 +178,7 @@ class Grid extends Backbone.Model
 		for i in [0..smallBlocks-1]
 			spot = this.getRandomEmptySpot()
 			unless spot == false
-				this.setVal(spot.x,spot.y,"S")
+				this.setBlock spot.x, spot.y, SMALL
 			else
 				# no free small spots found
 				console.log "not enough free small spots found"

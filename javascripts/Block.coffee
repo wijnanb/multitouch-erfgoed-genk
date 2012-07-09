@@ -1,5 +1,6 @@
 class Block extends Backbone.Model
 	defaults:
+		placed: false
 		position:
 			x: 0
 			y: 0
@@ -35,9 +36,14 @@ class Block extends Backbone.Model
 			x: Math.round pixel_position.x / config.block.width
 			y: Math.round pixel_position.y / config.block.height
 
-	positionOnGrid: () ->
-		this.set "position" : this.nearestPosition()
+	place: (position=false, size=false) ->
+		if !position
+			position = this.nearestPosition()
+		if size then this.set "size" : size
+
+		this.set "position" : position
 		this.set "drag_offset": { x:0, y:0 }, silent: true
+		this.set "placed" : true
 
 	onDragging: () ->
 		#console.log("model.onHover")
@@ -82,10 +88,14 @@ class BlockCollection extends Backbone.Collection
 			element.set 'under' : false
 
 	onDropped: (model) ->
-		affected = this.getAffectedBlocksUnderHoverPosition model
-		console.log "affected", affected
+		console.log "block.onDropped"
 
-		model.positionOnGrid()
+		affected = this.getAffectedBlocksUnderHoverPosition model
+		#console.log "affected", affected
+
+		_.each affected, (element, index) -> element.set "placed" : false
+
+		model.place()
 		model.set 'hover_position' : false
 
 	getAffectedBlocksUnderHoverPosition: (model) ->
@@ -145,15 +155,28 @@ class BlockCollection extends Backbone.Collection
 		_.uniq neighbours
 
 	setBlocksToGridPositions: (positions) ->
-		blocks = this.getBlocksOrdered()
+		that = this
+		blocks = this.getBlocksOrdered true
+
+		#filter free positions
+		positions = _.reject positions, (element, index) ->
+			that.find (block, i) -> block.get("placed") && block.get("position").x == element.x && block.get("position").y == element.y
+
+		console.log "filtered positions", positions
 
 		_.each blocks, (element, index) ->
-			pos = positions[index]
-			element.set "position", {"x": pos.x, "y": pos.y }
-			element.set "size", if pos.value == "B" then BIG  else SMALL
+			position = positions[index]
+			size = if position.value == "B" then BIG else SMALL
+			element.place position, size
 
-	getBlocksOrdered: () ->
-		this.models.sort (a,b) ->
+	getBlocksOrdered: (nonPlacedOnly=false) ->
+		blocks = if nonPlacedOnly
+				this.filter (element, index) ->  !element.get("placed")
+			else this.models
+
+		console.log blocks
+		
+		blocks.sort (a,b) ->
 			pos_a = a.get "position" 
 			pos_b = b.get "position"
 
@@ -208,6 +231,7 @@ class BlockView extends Backbone.View
 		console.log "ondragstart", event
 		this.model.set 'dragging' : true
 		this.model.set 'hover_position' : this.model.get("position")
+		this.model.set 'placed' : false
 
 	ondragend: (event) ->
 		console.log "ondragend", event

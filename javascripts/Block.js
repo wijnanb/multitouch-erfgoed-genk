@@ -13,6 +13,7 @@
     }
 
     Block.prototype.defaults = {
+      placed: false,
       position: {
         x: 0,
         y: 0
@@ -54,16 +55,33 @@
       };
     };
 
-    Block.prototype.positionOnGrid = function() {
+    Block.prototype.place = function(position, size) {
+      if (position == null) {
+        position = false;
+      }
+      if (size == null) {
+        size = false;
+      }
+      if (!position) {
+        position = this.nearestPosition();
+      }
+      if (size) {
+        this.set({
+          "size": size
+        });
+      }
       this.set({
-        "position": this.nearestPosition()
+        "position": position
       });
-      return this.set({
+      this.set({
         "drag_offset": {
           x: 0,
           y: 0
         },
         silent: true
+      });
+      return this.set({
+        "placed": true
       });
     };
 
@@ -132,9 +150,14 @@
 
     BlockCollection.prototype.onDropped = function(model) {
       var affected;
+      console.log("block.onDropped");
       affected = this.getAffectedBlocksUnderHoverPosition(model);
-      console.log("affected", affected);
-      model.positionOnGrid();
+      _.each(affected, function(element, index) {
+        return element.set({
+          "placed": false
+        });
+      });
+      model.place();
       return model.set({
         'hover_position': false
       });
@@ -216,21 +239,33 @@
     };
 
     BlockCollection.prototype.setBlocksToGridPositions = function(positions) {
-      var blocks;
-      blocks = this.getBlocksOrdered();
-      return _.each(blocks, function(element, index) {
-        var pos;
-        pos = positions[index];
-        element.set("position", {
-          "x": pos.x,
-          "y": pos.y
+      var blocks, that;
+      that = this;
+      blocks = this.getBlocksOrdered(true);
+      positions = _.reject(positions, function(element, index) {
+        return that.find(function(block, i) {
+          return block.get("placed") && block.get("position").x === element.x && block.get("position").y === element.y;
         });
-        return element.set("size", pos.value === "B" ? BIG : SMALL);
+      });
+      console.log("filtered positions", positions);
+      return _.each(blocks, function(element, index) {
+        var position, size;
+        position = positions[index];
+        size = position.value === "B" ? BIG : SMALL;
+        return element.place(position, size);
       });
     };
 
-    BlockCollection.prototype.getBlocksOrdered = function() {
-      return this.models.sort(function(a, b) {
+    BlockCollection.prototype.getBlocksOrdered = function(nonPlacedOnly) {
+      var blocks;
+      if (nonPlacedOnly == null) {
+        nonPlacedOnly = false;
+      }
+      blocks = nonPlacedOnly ? this.filter(function(element, index) {
+        return !element.get("placed");
+      }) : this.models;
+      console.log(blocks);
+      return blocks.sort(function(a, b) {
         var pos_a, pos_b;
         pos_a = a.get("position");
         pos_b = b.get("position");
@@ -307,8 +342,11 @@
       this.model.set({
         'dragging': true
       });
-      return this.model.set({
+      this.model.set({
         'hover_position': this.model.get("position")
+      });
+      return this.model.set({
+        'placed': false
       });
     };
 

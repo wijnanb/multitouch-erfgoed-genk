@@ -23,41 +23,67 @@
     Grid.prototype.initialize = function() {
       this.get("blocks").on("contentReset", this.contentReset, this);
       this.get("regions").on("change:active", this.regionsChange, this);
+      this.get("blocks").on("change:placed", this.blockPlacedChange, this);
+      this.get("blocks").on("dropped", this.blockDropped, this);
       return this.set({
         "data": new Array(config.grid_size.x * config.grid_size.y)
       });
     };
 
     Grid.prototype.contentReset = function() {
+      this.emptyGrid();
       return this.update();
     };
 
     Grid.prototype.update = function() {
-      var activeRegions, region, _i, _len;
-      this.emptyGrid();
-      activeRegions = this.get('regions').getActiveRegions();
-      for (_i = 0, _len = activeRegions.length; _i < _len; _i++) {
-        region = activeRegions[_i];
-        this.setRegion(region);
-      }
       this.fillWithBlocks();
       this.trigger("change:data");
-      console.log("grid positions: ", this.getGridPositions());
       return this.get("blocks").setBlocksToGridPositions(this.getGridPositions());
     };
 
-    Grid.prototype.regionsChange = function(model, options) {
+    Grid.prototype.regionsChange = function(model, value) {
       var that;
       that = this;
       clearTimeout(this.regionsChangedTimeout);
       return this.regionsChangedTimeout = setTimeout(function() {
-        var active;
+        var active, activeRegions, region, _i, _len;
         active = that.get('regions').getActiveRegions();
         console.log("regions", _.map(active, function(element) {
           return element.get('position');
         }));
+        that.get("blocks").each(function(element, index) {
+          return element.set({
+            "placed": false
+          });
+        });
+        that.emptyGrid();
+        activeRegions = that.get('regions').getActiveRegions();
+        for (_i = 0, _len = activeRegions.length; _i < _len; _i++) {
+          region = activeRegions[_i];
+          that.setRegion(region);
+        }
         return that.update();
       }, 0);
+    };
+
+    Grid.prototype.blockPlacedChange = function(model, value) {
+      var position;
+      if (value === false) {
+        console.log("unplaced", model);
+        position = model.get("position");
+        this.empty(position.x, position.y);
+        return this.trigger("change:data");
+      }
+    };
+
+    Grid.prototype.blockDropped = function(block) {
+      var position, size;
+      console.log("Grid.blockDropped", block);
+      position = block.get("position");
+      size = block.get("size");
+      this.setBlock(position.x, position.y, size);
+      this.trigger("change:data");
+      return this.update();
     };
 
     Grid.prototype.val = function(x, y) {
@@ -67,6 +93,17 @@
       }
       data = this.get("data");
       return data[y * config.grid_size.x + x];
+    };
+
+    Grid.prototype.empty = function(x, y) {
+      if (this.val(x, y) === "B") {
+        this.setVal(x, y, ".");
+        this.setVal(x + 1, y, ".");
+        this.setVal(x, y + 1, ".");
+        return this.setVal(x + 1, y + 1, ".");
+      } else if (this.val(x, y) === "S") {
+        return this.setVal(x, y, ".");
+      }
     };
 
     Grid.prototype.isEmpty = function(x, y, big) {
@@ -142,6 +179,24 @@
       return this.setVal(x, y, "R");
     };
 
+    Grid.prototype.setBlock = function(x, y, size) {
+      if (size == null) {
+        size = BIG;
+      }
+      if (size === BIG) {
+        x = Math.max(0, Math.min(x, config.grid_size.x - 2));
+        y = Math.max(0, Math.min(y, config.grid_size.y - 2));
+        this.setVal(x, y, "B");
+        this.setVal(x + 1, y, "b");
+        this.setVal(x, y + 1, "b");
+        return this.setVal(x + 1, y + 1, "b");
+      } else if (size === SMALL) {
+        x = Math.max(0, Math.min(x, config.grid_size.x - 1));
+        y = Math.max(0, Math.min(y, config.grid_size.y - 1));
+        return this.setVal(x, y, "S");
+      }
+    };
+
     Grid.prototype.emptyGrid = function() {
       var data, i, _i, _ref;
       console.log("emptyGrid");
@@ -155,19 +210,21 @@
     };
 
     Grid.prototype.fillWithBlocks = function() {
-      var bigBlocks, blocks, i, maxFreeBig, maxFreeSmall, smallBlocks, spot, _i, _j, _ref, _ref1, _results;
-      blocks = this.get("blocks");
+      var alreadyPlaced, bigBlocks, blocks, i, maxFreeBig, maxFreeSmall, smallBlocks, spot, _i, _j, _ref, _ref1, _results;
+      blocks = this.get("blocks").getBlocksOrdered(true);
+      if (blocks.length === 0) {
+        return;
+      }
+      alreadyPlaced = this.get("blocks").length - blocks.length;
       maxFreeBig = Math.min(blocks.length, this.freeBigSpots());
       maxFreeSmall = this.freeSmallSpots();
       bigBlocks = Math.min(blocks.length, Math.floor((maxFreeSmall - blocks.length) / (4 - 1)));
       smallBlocks = Math.max(0, Math.min(blocks.length - bigBlocks, maxFreeSmall - bigBlocks * 4));
+      console.log("fill with blocks", blocks, bigBlocks, smallBlocks);
       for (i = _i = 0, _ref = bigBlocks - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
         spot = this.getRandomEmptySpot(true);
         if (spot !== false) {
-          this.setVal(spot.x, spot.y, "B");
-          this.setVal(spot.x + 1, spot.y, "b");
-          this.setVal(spot.x, spot.y + 1, "b");
-          this.setVal(spot.x + 1, spot.y + 1, "b");
+          this.setBlock(spot.x, spot.y, BIG);
         } else {
           console.log("not enough free big spots found");
           bigBlocks = i;
@@ -179,7 +236,7 @@
       for (i = _j = 0, _ref1 = smallBlocks - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
         spot = this.getRandomEmptySpot();
         if (spot !== false) {
-          _results.push(this.setVal(spot.x, spot.y, "S"));
+          _results.push(this.setBlock(spot.x, spot.y, SMALL));
         } else {
           console.log("not enough free small spots found");
           break;
