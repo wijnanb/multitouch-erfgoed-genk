@@ -23,6 +23,7 @@ class Block extends Backbone.Model
 		this.on "change:hover_position", this.onHover, this
 		this.on "change:under", this.onUnder, this
 		this.on "change:dragging", this.onDragging, this
+		this.on "change;size", this.onSizeChanged, this
 		
 	nearestPosition: () ->
 		pixel_position = 
@@ -45,10 +46,17 @@ class Block extends Backbone.Model
 		this.set "drag_offset": { x:0, y:0 }, silent: true
 		this.set "placed" : true
 
+	largeAllowed: () ->
+		# return false when not enough space for large
+		true
+
 	onDragging: () ->
 		#console.log("model.onHover")
 		this.set "transition_translation", if this.get "dragging" then "" else "-webkit-transform 0.4s ease-in-out"
 
+	onSizeChanged: () ->
+		if this.get("size") == LARGE
+			unless this.largeAllowed() then this.set("size" : SMALL)
 
 
 
@@ -187,8 +195,9 @@ class BlockCollection extends Backbone.Collection
 				if (pos_a.y < pos_b.y) then return -1
 				if (pos_a.y > pos_b.y) then return 1
 				if (pos_a.y == pos_b.y) then return 0
-
-
+	
+	getNonPlacedBlocks: () ->
+		this.filter (element, index) ->  !element.get("placed")
 
 
 

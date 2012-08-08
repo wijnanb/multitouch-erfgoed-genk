@@ -24,6 +24,7 @@ window.config =
 			x: 4, y: 5
 		BOTTOM_RIGHT:
 			x: 10, y:5
+	debug_grid: true
 
 
 ### calculate block size

@@ -38,7 +38,8 @@
     Block.prototype.initialize = function() {
       this.on("change:hover_position", this.onHover, this);
       this.on("change:under", this.onUnder, this);
-      return this.on("change:dragging", this.onDragging, this);
+      this.on("change:dragging", this.onDragging, this);
+      return this.on("change;size", this.onSizeChanged, this);
     };
 
     Block.prototype.nearestPosition = function() {
@@ -85,8 +86,22 @@
       });
     };
 
+    Block.prototype.largeAllowed = function() {
+      return true;
+    };
+
     Block.prototype.onDragging = function() {
       return this.set("transition_translation", this.get("dragging") ? "" : "-webkit-transform 0.4s ease-in-out");
+    };
+
+    Block.prototype.onSizeChanged = function() {
+      if (this.get("size") === LARGE) {
+        if (!this.largeAllowed()) {
+          return this.set({
+            "size": SMALL
+          });
+        }
+      }
     };
 
     return Block;
@@ -286,6 +301,12 @@
             return 0;
           }
         }
+      });
+    };
+
+    BlockCollection.prototype.getNonPlacedBlocks = function() {
+      return this.filter(function(element, index) {
+        return !element.get("placed");
       });
     };
 

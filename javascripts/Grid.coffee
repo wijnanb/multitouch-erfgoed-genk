@@ -61,7 +61,7 @@ class Grid extends Backbone.Model
 		this.setBlock position.x, position.y, size
 		this.trigger "change:data"
 
-		this.update()
+		this.findNearestPositionForNonPlacedBlocks(position)
 
 	val: (x,y) ->
 		if x < 0 or y < 0 or x > config.grid_size.x-1 or y > config.grid_size.y-1
@@ -96,21 +96,42 @@ class Grid extends Backbone.Model
 		this.set "data": data
 
 	getRandomEmptySpot: (big) ->
-		cnt = 0
-		try_x = _.shuffle [0..config.grid_size.x-1]
-		try_y = _.shuffle [0..config.grid_size.y-1]
+		range_x = _.shuffle [0..config.grid_size.x-1]
+		range_y = _.shuffle [0..config.grid_size.y-1]
 
-		for i in try_x
-			for j in try_y
-				x = try_x[i]
-				y = try_y[j]
-				cnt++
-				#console.log "try", x, y, this.isEmpty(x,y,big)
+		this.getEmptySpot(range_x, range_y, big)
+		
+	findFreeSpotCloseTo: (center, big) ->
+		range_x = this.findRangeClosest(center.x,config.grid_size.x)
+		range_y = this.findRangeClosest(center.y,config.grid_size.y)
+
+		this.getEmptySpot(range_x, range_y, big)
+
+	getEmptySpot: (range_x, range_y, big) ->
+		tries = []
+		
+		for i in range_x
+			for j in range_y
+				x = range_x[i]
+				y = range_y[j]
+				tries.push  "("+x+","+y+")"
 				if this.isEmpty(x,y,big)
-					#console.log "found with #{cnt} tries"
+					console.log "found with #{tries.length} tries", tries
 					return {"x": x, "y": y}
 		false
 
+	findRangeClosest: (center, size) ->
+		range_l = [center..0]
+		range_r = [center..size-1]
+
+		range = []
+		shortest = if range_l.length > range_r.length then range_r else range_l
+		longest = if range_l.length > range_r.length then range_l else range_r
+
+		for i in [0..shortest.length*2-1]
+			range[i] = if i%2 == 0 then range_l[i/2] else range_r[(i-1)/2]
+		range = range.concat _.rest(longest, shortest.length)
+		range = _.rest(range,1)
 		
 	setRegion: (region) ->
 		x = config.region_positions[region.get("position")].x
@@ -184,6 +205,25 @@ class Grid extends Backbone.Model
 				console.log "not enough free small spots found"
 				break
 
+	findNearestPositionForNonPlacedBlocks: (center) ->
+		nonPlacedBlocks = this.get("blocks").getNonPlacedBlocks()
+
+		for block in nonPlacedBlocks
+			position = block.get("position")
+			this.empty position.x, position.y
+
+		for block in nonPlacedBlocks
+			position = this.findFreeSpotCloseTo(center, block.get("size") == BIG)
+
+			if position == false
+				console.warn "cannot find big spot, shrink the block"
+				block.set("size" : SMALL)
+				position = this.findFreeSpotCloseTo(center, block.get("size") == BIG)
+
+			console.log position.x, position.y
+			this.setBlock position.x, position.y, block.get("size")
+			this.trigger "change:data"
+			block.place position
 
 	clearRegions: () ->
 		for y in [0..config.grid_size.y-1]

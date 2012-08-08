@@ -11,9 +11,11 @@
         blocks: blockCollection,
         regions: regionCollection
       });
-      gridView = new GridView({
-        model: grid
-      }).render();
+      if (config.debug_grid) {
+        gridView = new GridView({
+          model: grid
+        }).render();
+      }
       multiTouch = new MultiTouch({
         el: $("body").get(0)
       });

@@ -83,7 +83,7 @@
       size = block.get("size");
       this.setBlock(position.x, position.y, size);
       this.trigger("change:data");
-      return this.update();
+      return this.findNearestPositionForNonPlacedBlocks(position);
     };
 
     Grid.prototype.val = function(x, y) {
@@ -133,26 +133,39 @@
     };
 
     Grid.prototype.getRandomEmptySpot = function(big) {
-      var cnt, i, j, try_x, try_y, x, y, _i, _j, _k, _l, _len, _len1, _ref, _ref1, _results, _results1;
-      cnt = 0;
-      try_x = _.shuffle((function() {
+      var range_x, range_y, _i, _j, _ref, _ref1, _results, _results1;
+      range_x = _.shuffle((function() {
         _results = [];
         for (var _i = 0, _ref = config.grid_size.x - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
         return _results;
       }).apply(this));
-      try_y = _.shuffle((function() {
+      range_y = _.shuffle((function() {
         _results1 = [];
         for (var _j = 0, _ref1 = config.grid_size.y - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; 0 <= _ref1 ? _j++ : _j--){ _results1.push(_j); }
         return _results1;
       }).apply(this));
-      for (_k = 0, _len = try_x.length; _k < _len; _k++) {
-        i = try_x[_k];
-        for (_l = 0, _len1 = try_y.length; _l < _len1; _l++) {
-          j = try_y[_l];
-          x = try_x[i];
-          y = try_y[j];
-          cnt++;
+      return this.getEmptySpot(range_x, range_y, big);
+    };
+
+    Grid.prototype.findFreeSpotCloseTo = function(center, big) {
+      var range_x, range_y;
+      range_x = this.findRangeClosest(center.x, config.grid_size.x);
+      range_y = this.findRangeClosest(center.y, config.grid_size.y);
+      return this.getEmptySpot(range_x, range_y, big);
+    };
+
+    Grid.prototype.getEmptySpot = function(range_x, range_y, big) {
+      var i, j, tries, x, y, _i, _j, _len, _len1;
+      tries = [];
+      for (_i = 0, _len = range_x.length; _i < _len; _i++) {
+        i = range_x[_i];
+        for (_j = 0, _len1 = range_y.length; _j < _len1; _j++) {
+          j = range_y[_j];
+          x = range_x[i];
+          y = range_y[j];
+          tries.push("(" + x + "," + y + ")");
           if (this.isEmpty(x, y, big)) {
+            console.log("found with " + tries.length + " tries", tries);
             return {
               "x": x,
               "y": y
@@ -161,6 +174,28 @@
         }
       }
       return false;
+    };
+
+    Grid.prototype.findRangeClosest = function(center, size) {
+      var i, longest, range, range_l, range_r, shortest, _i, _j, _k, _ref, _ref1, _results, _results1;
+      range_l = (function() {
+        _results = [];
+        for (var _i = center; center <= 0 ? _i <= 0 : _i >= 0; center <= 0 ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this);
+      range_r = (function() {
+        _results1 = [];
+        for (var _j = center, _ref = size - 1; center <= _ref ? _j <= _ref : _j >= _ref; center <= _ref ? _j++ : _j--){ _results1.push(_j); }
+        return _results1;
+      }).apply(this);
+      range = [];
+      shortest = range_l.length > range_r.length ? range_r : range_l;
+      longest = range_l.length > range_r.length ? range_l : range_r;
+      for (i = _k = 0, _ref1 = shortest.length * 2 - 1; 0 <= _ref1 ? _k <= _ref1 : _k >= _ref1; i = 0 <= _ref1 ? ++_k : --_k) {
+        range[i] = i % 2 === 0 ? range_l[i / 2] : range_r[(i - 1) / 2];
+      }
+      range = range.concat(_.rest(longest, shortest.length));
+      return range = _.rest(range, 1);
     };
 
     Grid.prototype.setRegion = function(region) {
@@ -241,6 +276,33 @@
           console.log("not enough free small spots found");
           break;
         }
+      }
+      return _results;
+    };
+
+    Grid.prototype.findNearestPositionForNonPlacedBlocks = function(center) {
+      var block, nonPlacedBlocks, position, _i, _j, _len, _len1, _results;
+      nonPlacedBlocks = this.get("blocks").getNonPlacedBlocks();
+      for (_i = 0, _len = nonPlacedBlocks.length; _i < _len; _i++) {
+        block = nonPlacedBlocks[_i];
+        position = block.get("position");
+        this.empty(position.x, position.y);
+      }
+      _results = [];
+      for (_j = 0, _len1 = nonPlacedBlocks.length; _j < _len1; _j++) {
+        block = nonPlacedBlocks[_j];
+        position = this.findFreeSpotCloseTo(center, block.get("size") === BIG);
+        if (position === false) {
+          console.warn("cannot find big spot, shrink the block");
+          block.set({
+            "size": SMALL
+          });
+          position = this.findFreeSpotCloseTo(center, block.get("size") === BIG);
+        }
+        console.log(position.x, position.y);
+        this.setBlock(position.x, position.y, block.get("size"));
+        this.trigger("change:data");
+        _results.push(block.place(position));
       }
       return _results;
     };

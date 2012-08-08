@@ -42,7 +42,8 @@
         x: 10,
         y: 5
       }
-    }
+    },
+    debug_grid: true
   };
 
   /* calculate block size
