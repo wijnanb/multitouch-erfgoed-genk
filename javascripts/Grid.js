@@ -81,8 +81,14 @@
       console.log("Grid.blockDropped", block);
       position = block.get("position");
       size = block.get("size");
-      this.setBlock(position.x, position.y, size);
-      this.trigger("change:data");
+      if (this.isDroppedOnRegion(block)) {
+        console.warn("dropped on region");
+        block.open();
+      } else {
+        block.close();
+        this.setBlock(position.x, position.y, size);
+        this.trigger("change:data");
+      }
       return this.findNearestPositionForNonPlacedBlocks(position);
     };
 
@@ -123,6 +129,22 @@
       }
     };
 
+    Grid.prototype.isDroppedOnRegion = function(block) {
+      var x, y;
+      x = block.get("position").x;
+      y = block.get("position").y;
+      if (block.get("size") === BIG) {
+        if (this.val(x, y).toLowerCase() === "r" || this.val(x + 1, y).toLowerCase() === "r" || this.val(x, y + 1).toLowerCase() === "r" || this.val(x + 1, y + 1).toLowerCase() === "r") {
+          return true;
+        }
+      } else {
+        if (this.val(x, y).toLowerCase() === "r") {
+          return true;
+        }
+      }
+      return false;
+    };
+
     Grid.prototype.setVal = function(x, y, value) {
       var data;
       data = this.get("data");
@@ -133,7 +155,7 @@
     };
 
     Grid.prototype.getRandomEmptySpot = function(big) {
-      var range_x, range_y, _i, _j, _ref, _ref1, _results, _results1;
+      var index_x, index_y, range, range_x, range_y, x, y, _i, _j, _k, _l, _len, _len1, _ref, _ref1, _results, _results1;
       range_x = _.shuffle((function() {
         _results = [];
         for (var _i = 0, _ref = config.grid_size.x - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
@@ -144,33 +166,69 @@
         for (var _j = 0, _ref1 = config.grid_size.y - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; 0 <= _ref1 ? _j++ : _j--){ _results1.push(_j); }
         return _results1;
       }).apply(this));
-      return this.getEmptySpot(range_x, range_y, big);
+      range = [];
+      for (_k = 0, _len = range_x.length; _k < _len; _k++) {
+        index_x = range_x[_k];
+        for (_l = 0, _len1 = range_y.length; _l < _len1; _l++) {
+          index_y = range_y[_l];
+          x = range_x[index_x];
+          y = range_y[index_y];
+          range.push({
+            "x": x,
+            "y": y
+          });
+        }
+      }
+      return this.getEmptySpot(range, big);
     };
 
     Grid.prototype.findFreeSpotCloseTo = function(center, big) {
-      var range_x, range_y;
-      range_x = this.findRangeClosest(center.x, config.grid_size.x);
-      range_y = this.findRangeClosest(center.y, config.grid_size.y);
-      return this.getEmptySpot(range_x, range_y, big);
+      var d2, dx, dy, index_x, index_y, range, range_x, range_y, x, y, _i, _j, _k, _l, _len, _len1, _ref, _ref1, _results, _results1;
+      range_x = (function() {
+        _results = [];
+        for (var _i = 0, _ref = config.grid_size.x - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this);
+      range_y = (function() {
+        _results1 = [];
+        for (var _j = 0, _ref1 = config.grid_size.y - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; 0 <= _ref1 ? _j++ : _j--){ _results1.push(_j); }
+        return _results1;
+      }).apply(this);
+      range = [];
+      for (_k = 0, _len = range_x.length; _k < _len; _k++) {
+        index_x = range_x[_k];
+        for (_l = 0, _len1 = range_y.length; _l < _len1; _l++) {
+          index_y = range_y[_l];
+          x = range_x[index_x];
+          y = range_y[index_y];
+          dx = x - center.x;
+          dy = y - center.y;
+          d2 = dx * dx + dy * dy;
+          range.push({
+            "x": x,
+            "y": y,
+            "d2": d2
+          });
+        }
+      }
+      range = _.sortBy(range, "d2");
+      console.log("findFreeSpotCloseTo", range, big);
+      return this.getEmptySpot(range, big);
     };
 
-    Grid.prototype.getEmptySpot = function(range_x, range_y, big) {
-      var i, j, tries, x, y, _i, _j, _len, _len1;
+    Grid.prototype.getEmptySpot = function(range, big) {
+      var position, tries, x, y, _i, _len;
       tries = [];
-      for (_i = 0, _len = range_x.length; _i < _len; _i++) {
-        i = range_x[_i];
-        for (_j = 0, _len1 = range_y.length; _j < _len1; _j++) {
-          j = range_y[_j];
-          x = range_x[i];
-          y = range_y[j];
-          tries.push("(" + x + "," + y + ")");
-          if (this.isEmpty(x, y, big)) {
-            console.log("found with " + tries.length + " tries", tries);
-            return {
-              "x": x,
-              "y": y
-            };
-          }
+      for (_i = 0, _len = range.length; _i < _len; _i++) {
+        position = range[_i];
+        x = position.x;
+        y = position.y;
+        tries.push("(" + x + "," + y + ")");
+        if (this.isEmpty(x, y, big)) {
+          return {
+            "x": x,
+            "y": y
+          };
         }
       }
       return false;
@@ -255,7 +313,7 @@
       maxFreeSmall = this.freeSmallSpots();
       bigBlocks = Math.min(blocks.length, Math.floor((maxFreeSmall - blocks.length) / (4 - 1)));
       smallBlocks = Math.max(0, Math.min(blocks.length - bigBlocks, maxFreeSmall - bigBlocks * 4));
-      console.log("fill with blocks", blocks, bigBlocks, smallBlocks);
+      console.log("fill with blocks", "big: " + bigBlocks, "small: " + smallBlocks);
       for (i = _i = 0, _ref = bigBlocks - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
         spot = this.getRandomEmptySpot(true);
         if (spot !== false) {
@@ -281,16 +339,11 @@
     };
 
     Grid.prototype.findNearestPositionForNonPlacedBlocks = function(center) {
-      var block, nonPlacedBlocks, position, _i, _j, _len, _len1, _results;
+      var block, nonPlacedBlocks, position, _i, _len, _results;
       nonPlacedBlocks = this.get("blocks").getNonPlacedBlocks();
+      _results = [];
       for (_i = 0, _len = nonPlacedBlocks.length; _i < _len; _i++) {
         block = nonPlacedBlocks[_i];
-        position = block.get("position");
-        this.empty(position.x, position.y);
-      }
-      _results = [];
-      for (_j = 0, _len1 = nonPlacedBlocks.length; _j < _len1; _j++) {
-        block = nonPlacedBlocks[_j];
         position = this.findFreeSpotCloseTo(center, block.get("size") === BIG);
         if (position === false) {
           console.warn("cannot find big spot, shrink the block");
@@ -299,7 +352,6 @@
           });
           position = this.findFreeSpotCloseTo(center, block.get("size") === BIG);
         }
-        console.log(position.x, position.y);
         this.setBlock(position.x, position.y, block.get("size"));
         this.trigger("change:data");
         _results.push(block.place(position));

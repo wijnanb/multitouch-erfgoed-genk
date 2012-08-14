@@ -32,14 +32,18 @@
       transform_rotation: null,
       transition_translation: "-webkit-transform 0.4s ease-in-out",
       transition_scale: null,
-      empty: true
+      empty: true,
+      opened: false,
+      orientation: NORMAL
     };
 
     Block.prototype.initialize = function() {
       this.on("change:hover_position", this.onHover, this);
       this.on("change:under", this.onUnder, this);
       this.on("change:dragging", this.onDragging, this);
-      return this.on("change;size", this.onSizeChanged, this);
+      this.on("change:size", this.onSizeChanged, this);
+      this.on("change:opened", this.onOpenedChanged, this);
+      return this.on("change:orientation", this.onOrientationChanged, this);
     };
 
     Block.prototype.nearestPosition = function() {
@@ -94,13 +98,51 @@
       return this.set("transition_translation", this.get("dragging") ? "" : "-webkit-transform 0.4s ease-in-out");
     };
 
+    Block.prototype.onHover = function(model, value, options) {
+      console.log("onHover", this.get("drag_offset").x, this.get("drag_offset").y);
+      if (this.get("drag_offset").y > 0) {
+        return this.set({
+          "orientation": NORMAL
+        });
+      } else if (this.get("drag_offset").y < 0) {
+        return this.set({
+          "orientation": UPSIDE_DOWN
+        });
+      }
+    };
+
     Block.prototype.onSizeChanged = function() {
-      if (this.get("size") === LARGE) {
+      if (this.get("size") === BIG) {
         if (!this.largeAllowed()) {
           return this.set({
             "size": SMALL
           });
         }
+      }
+    };
+
+    Block.prototype.onOpenedChanged = function() {
+      return console.log("opened: ", this.get("opened"));
+    };
+
+    Block.prototype.open = function() {
+      return this.set({
+        "opened": true
+      });
+    };
+
+    Block.prototype.close = function() {
+      return this.set({
+        "opened": false
+      });
+    };
+
+    Block.prototype.onOrientationChanged = function() {
+      if (this.get("orientation") === UPSIDE_DOWN) {
+        console.warn("UPSIDE_DOWN");
+        return this.set("transform_rotation", "180deg");
+      } else {
+        return this.set("transform_rotation", "");
       }
     };
 
@@ -306,7 +348,7 @@
 
     BlockCollection.prototype.getNonPlacedBlocks = function() {
       return this.filter(function(element, index) {
-        return !element.get("placed");
+        return !element.get("placed") && !element.get("opened");
       });
     };
 

@@ -18,12 +18,16 @@ class Block extends Backbone.Model
 		transition_translation: "-webkit-transform 0.4s ease-in-out"
 		transition_scale: null
 		empty: true
+		opened: false
+		orientation: NORMAL
 
 	initialize: () ->
 		this.on "change:hover_position", this.onHover, this
 		this.on "change:under", this.onUnder, this
 		this.on "change:dragging", this.onDragging, this
-		this.on "change;size", this.onSizeChanged, this
+		this.on "change:size", this.onSizeChanged, this
+		this.on "change:opened", this.onOpenedChanged, this
+		this.on "change:orientation", this.onOrientationChanged, this
 		
 	nearestPosition: () ->
 		pixel_position = 
@@ -52,14 +56,35 @@ class Block extends Backbone.Model
 
 	onDragging: () ->
 		#console.log("model.onHover")
-		this.set "transition_translation", if this.get "dragging" then "" else "-webkit-transform 0.4s ease-in-out"
+		this.set "transition_translation", if this.get "dragging" then "" else "-webkit-transform 0.4s ease-in-out"			
+
+	onHover: (model, value, options) ->
+		console.log "onHover", this.get("drag_offset").x, this.get("drag_offset").y
+
+		if this.get("drag_offset").y > 0
+			this.set "orientation" : NORMAL
+		else if this.get("drag_offset").y < 0
+			this.set "orientation" : UPSIDE_DOWN
 
 	onSizeChanged: () ->
-		if this.get("size") == LARGE
+		if this.get("size") == BIG
 			unless this.largeAllowed() then this.set("size" : SMALL)
 
+	onOpenedChanged: () ->
+		console.log "opened: ", this.get "opened"
 
+	open: () ->
+		this.set "opened" : true
 
+	close: () ->
+		this.set "opened" : false
+
+	onOrientationChanged: () ->
+		if this.get("orientation") == UPSIDE_DOWN
+			console.warn "UPSIDE_DOWN"
+			this.set "transform_rotation", "180deg"
+		else
+			this.set "transform_rotation", ""
 
 class BlockCollection extends Backbone.Collection
 	model: Block
@@ -197,7 +222,7 @@ class BlockCollection extends Backbone.Collection
 				if (pos_a.y == pos_b.y) then return 0
 	
 	getNonPlacedBlocks: () ->
-		this.filter (element, index) ->  !element.get("placed")
+		this.filter (element, index) ->  !element.get("placed") && !element.get("opened")
 
 
 

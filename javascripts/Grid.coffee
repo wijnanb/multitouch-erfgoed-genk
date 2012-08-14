@@ -44,23 +44,28 @@ class Grid extends Backbone.Model
 		, 0 
 
 	blockPlacedChange: (model, value) ->
-		#remove position from grid when no longer placed
 		if value == false
+			#remove position from grid when no longer placed
 			console.log "unplaced", model
 			position = model.get "position"
 			this.empty position.x, position.y
 
 			this.trigger "change:data"
-	
+				
 	blockDropped: (block) ->
 		console.log "Grid.blockDropped", block
 
 		position = block.get "position"
 		size = block.get "size"
 
-		this.setBlock position.x, position.y, size
-		this.trigger "change:data"
-
+		if this.isDroppedOnRegion(block)
+			console.warn "dropped on region"
+			block.open()
+		else
+			block.close()
+			this.setBlock position.x, position.y, size
+			this.trigger "change:data" 
+		
 		this.findNearestPositionForNonPlacedBlocks(position)
 
 	val: (x,y) ->
@@ -89,6 +94,18 @@ class Grid extends Backbone.Model
 				return false
 			return this.val(x,y) == "." or this.val(x,y) == ""
 
+	isDroppedOnRegion: (block) ->
+		x = block.get("position").x
+		y = block.get("position").y
+
+		if block.get("size") == BIG
+			if this.val(x,y).toLowerCase() == "r" or this.val(x+1,y).toLowerCase() == "r" or this.val(x,y+1).toLowerCase() == "r" or this.val(x+1,y+1).toLowerCase() == "r"
+				return true	
+		else
+			if this.val(x,y).toLowerCase() == "r"
+				return true
+		false
+
 	setVal: (x,y,value) ->
 		data = this.get("data")
 		data[ y * config.grid_size.x + x] = value
@@ -98,26 +115,46 @@ class Grid extends Backbone.Model
 	getRandomEmptySpot: (big) ->
 		range_x = _.shuffle [0..config.grid_size.x-1]
 		range_y = _.shuffle [0..config.grid_size.y-1]
+		range = []
 
-		this.getEmptySpot(range_x, range_y, big)
+		for index_x in range_x
+			for index_y in range_y
+				x = range_x[index_x]
+				y = range_y[index_y]
+				range.push( "x": x, "y": y )
+
+		this.getEmptySpot(range, big)
 		
 	findFreeSpotCloseTo: (center, big) ->
-		range_x = this.findRangeClosest(center.x,config.grid_size.x)
-		range_y = this.findRangeClosest(center.y,config.grid_size.y)
+		range_x = [0..config.grid_size.x-1]
+		range_y = [0..config.grid_size.y-1]
+		range = []
+		
+		#order by distance
+		for index_x in range_x
+			for index_y in range_y
+				x = range_x[index_x]
+				y = range_y[index_y]
+				dx = x - center.x
+				dy = y - center.y
+				d2 = dx*dx + dy*dy
+				range.push( "x": x, "y": y, "d2": d2 )
 
-		this.getEmptySpot(range_x, range_y, big)
+		range = _.sortBy range, "d2" 
 
-	getEmptySpot: (range_x, range_y, big) ->
+		console.log "findFreeSpotCloseTo", range, big
+		this.getEmptySpot(range, big)
+
+	getEmptySpot: (range, big) ->
 		tries = []
 		
-		for i in range_x
-			for j in range_y
-				x = range_x[i]
-				y = range_y[j]
-				tries.push  "("+x+","+y+")"
-				if this.isEmpty(x,y,big)
-					console.log "found with #{tries.length} tries", tries
-					return {"x": x, "y": y}
+		for position in range
+			x = position.x
+			y = position.y
+			tries.push  "("+x+","+y+")"
+			if this.isEmpty(x,y,big)
+				#console.log "found with #{tries.length} tries", tries
+				return {"x": x, "y": y}
 		false
 
 	findRangeClosest: (center, size) ->
@@ -181,7 +218,7 @@ class Grid extends Backbone.Model
 		bigBlocks = Math.min blocks.length, Math.floor (maxFreeSmall - blocks.length) / (4-1)
 		smallBlocks = Math.max 0, Math.min blocks.length - bigBlocks, maxFreeSmall - bigBlocks*4
 
-		console.log "fill with blocks", blocks, bigBlocks, smallBlocks
+		console.log "fill with blocks", "big: " + bigBlocks, "small: " + smallBlocks
 
 		# big first
 		for i in [0..bigBlocks-1]
@@ -209,10 +246,6 @@ class Grid extends Backbone.Model
 		nonPlacedBlocks = this.get("blocks").getNonPlacedBlocks()
 
 		for block in nonPlacedBlocks
-			position = block.get("position")
-			this.empty position.x, position.y
-
-		for block in nonPlacedBlocks
 			position = this.findFreeSpotCloseTo(center, block.get("size") == BIG)
 
 			if position == false
@@ -220,7 +253,6 @@ class Grid extends Backbone.Model
 				block.set("size" : SMALL)
 				position = this.findFreeSpotCloseTo(center, block.get("size") == BIG)
 
-			console.log position.x, position.y
 			this.setBlock position.x, position.y, block.get("size")
 			this.trigger "change:data"
 			block.place position
