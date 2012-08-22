@@ -23,6 +23,9 @@ App = ( ->
 		window.blockCollection = blockCollection
 		window.grid = grid
 		window.multiTouch = multiTouch
+
+		# Hello Ruben
+		window.Ruben = "Ruben"
 	)
 
 )();

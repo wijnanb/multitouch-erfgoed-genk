@@ -22,7 +22,8 @@
       window.regionCollection = regionCollection;
       window.blockCollection = blockCollection;
       window.grid = grid;
-      return window.multiTouch = multiTouch;
+      window.multiTouch = multiTouch;
+      return window.Ruben = "Ruben";
     });
   })();
 
