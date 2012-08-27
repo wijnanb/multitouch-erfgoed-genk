@@ -57,10 +57,13 @@ class Grid extends Backbone.Model
 
 		position = block.get "position"
 		size = block.get "size"
+		region = this.isDroppedOnRegion(block)
 
-		if this.isDroppedOnRegion(block)
+		console.log("region", region)
+
+		if region != false
 			console.warn "dropped on region"
-			block.open()
+			block.open(region)
 		else
 			block.close()
 			this.setBlock position.x, position.y, size
@@ -100,10 +103,10 @@ class Grid extends Backbone.Model
 
 		if block.get("size") == BIG
 			if this.val(x,y).toLowerCase() == "r" or this.val(x+1,y).toLowerCase() == "r" or this.val(x,y+1).toLowerCase() == "r" or this.val(x+1,y+1).toLowerCase() == "r"
-				return true	
+				return this.get("regions").getRegionAtCoordinates("x":x, "y":y)
 		else
 			if this.val(x,y).toLowerCase() == "r"
-				return true
+				return this.get("regions").getRegionAtCoordinates("x":x, "y":y)
 		false
 
 	setVal: (x,y,value) ->

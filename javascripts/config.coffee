@@ -17,15 +17,18 @@ window.config =
 		TOP:
 			x: 4, y: 0
 		TOP_RIGHT:
-			x: 10, y: 0
+			x: 8, y: 0
 		BOTTOM_LEFT:
 			x: 0, y: 5
 		BOTTOM:
 			x: 4, y: 5
 		BOTTOM_RIGHT:
-			x: 10, y:5
+			x: 8, y:5
 	debug_grid: true
-
+	folder:
+		box_size:
+			x: 130
+			y: 130
 
 ### calculate block size
 
@@ -40,6 +43,18 @@ grid_size: 14x8
 
 ==> full block size: 260x260
 
-==> region size: 780x390
+
+Regions:
+
+==> region size:   6x3 blocks  = 780x390
+==> folder: 4x3 blocs = 520x390
+
+take some margin and must be divideable by 4x3
+
+
+
+
+
+
 
 ###

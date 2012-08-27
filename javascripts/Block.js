@@ -34,6 +34,7 @@
       transition_scale: null,
       empty: true,
       opened: false,
+      opened_region: null,
       orientation: NORMAL
     };
 
@@ -125,7 +126,10 @@
       return console.log("opened: ", this.get("opened"));
     };
 
-    Block.prototype.open = function() {
+    Block.prototype.open = function(region) {
+      this.set({
+        "opened_region": region
+      });
       return this.set({
         "opened": true
       });
@@ -172,7 +176,7 @@
       var that;
       that = this;
       this.contentCollection.each(function(element, index, list) {
-        var attributes, block, blockView;
+        var attributes, block, blockView, folder, folderView;
         attributes = {
           content: element,
           position: {
@@ -181,10 +185,17 @@
           }
         };
         block = new Block(attributes);
-        that.add(block);
-        return blockView = new BlockView({
+        blockView = new BlockView({
           model: block,
           collection: that
+        }).render();
+        that.add(block);
+        folder = new Folder({
+          "content": element,
+          "block": block
+        });
+        return folderView = new FolderView({
+          model: folder
         }).render();
       });
       return this.trigger("contentReset");
@@ -379,6 +390,7 @@
       this.model.on("change:transform_rotation", this.transform);
       this.model.on("change:transition_translation", this.transform);
       this.model.on("change:transition_scale", this.transform);
+      this.model.on("change:opened", this.onOpenedChanged);
       this.collection = this.options.collection;
       return this.$el.appendTo($("#page"));
     };
@@ -527,6 +539,14 @@
           "transform_scale": small ? 0.5 : null
         });
         return this.$el.children(".inner").css("opacity", "");
+      }
+    };
+
+    BlockView.prototype.onOpenedChanged = function() {
+      if (this.model.get("opened")) {
+        return this.$el.hide();
+      } else {
+        return this.$el.show();
       }
     };
 

@@ -77,13 +77,15 @@
     };
 
     Grid.prototype.blockDropped = function(block) {
-      var position, size;
+      var position, region, size;
       console.log("Grid.blockDropped", block);
       position = block.get("position");
       size = block.get("size");
-      if (this.isDroppedOnRegion(block)) {
+      region = this.isDroppedOnRegion(block);
+      console.log("region", region);
+      if (region !== false) {
         console.warn("dropped on region");
-        block.open();
+        block.open(region);
       } else {
         block.close();
         this.setBlock(position.x, position.y, size);
@@ -135,11 +137,17 @@
       y = block.get("position").y;
       if (block.get("size") === BIG) {
         if (this.val(x, y).toLowerCase() === "r" || this.val(x + 1, y).toLowerCase() === "r" || this.val(x, y + 1).toLowerCase() === "r" || this.val(x + 1, y + 1).toLowerCase() === "r") {
-          return true;
+          return this.get("regions").getRegionAtCoordinates({
+            "x": x,
+            "y": y
+          });
         }
       } else {
         if (this.val(x, y).toLowerCase() === "r") {
-          return true;
+          return this.get("regions").getRegionAtCoordinates({
+            "x": x,
+            "y": y
+          });
         }
       }
       return false;

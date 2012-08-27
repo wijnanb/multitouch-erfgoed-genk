@@ -70,4 +70,16 @@
 
   window.ContentCollection = ContentCollection;
 
+  /*
+  app					server
+  
+  fetch
+  					api/content
+  					<-  JSON
+  parse
+  create models
+  fire event "reset"
+  */
+
+
 }).call(this);

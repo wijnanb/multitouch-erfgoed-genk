@@ -174,6 +174,22 @@
       });
     };
 
+    RegionCollection.prototype.getRegionAtCoordinates = function(coords) {
+      var result;
+      result = false;
+      _.each(this.getActiveRegions(), function(element, index) {
+        var region_pos;
+        region_pos = config.region_positions[element.get('position')];
+        console.log(element, region_pos, coords);
+        if (coords.x >= region_pos.x && coords.x < region_pos.x + config.region_size.x) {
+          if (coords.y >= region_pos.y && coords.y < region_pos.y + config.region_size.y) {
+            return result = element;
+          }
+        }
+      });
+      return result;
+    };
+
     RegionCollection.prototype.toggleActiveOnRegions = function(regions) {
       var changed, position, region, value, _results;
       changed = false;

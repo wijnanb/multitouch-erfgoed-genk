@@ -108,6 +108,20 @@ class RegionCollection extends Backbone.Collection
 	getRegionAtPosition: (position) ->
 		this.find (element) -> element.get('position') == position
 
+	getRegionAtCoordinates: (coords) ->
+		result = false
+
+		_.each this.getActiveRegions(), (element, index) -> 
+			region_pos = config.region_positions[ element.get('position') ]
+
+			console.log element, region_pos, coords
+
+			if coords.x >= region_pos.x && coords.x < region_pos.x + config.region_size.x
+				if coords.y >= region_pos.y && coords.y < region_pos.y + config.region_size.y
+					result = element
+		result
+
+
 	toggleActiveOnRegions: (regions) ->
 		changed = false
 		for position, value of regions

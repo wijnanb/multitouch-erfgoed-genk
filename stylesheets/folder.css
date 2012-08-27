@@ -1,13 +1,14 @@
-/* line 1, ../sass/folder.sass */
+/* line 5, ../sass/folder.sass */
 #folders {
   position: absolute;
   top: 0px;
   left: 0px;
   right: 0px;
   bottom: 0px;
+  z-index: 1;
 }
 
-/* line 8, ../sass/folder.sass */
+/* line 13, ../sass/folder.sass */
 .box, .row {
   -webkit-transition: all 600ms ease-in-out 0.2s;
   -webkit-backface-visibility: hidden;
@@ -15,62 +16,64 @@
   -webkit-transform-style: preserve-3d;
 }
 
-/* line 14, ../sass/folder.sass */
+/* line 19, ../sass/folder.sass */
 .folder {
   -webkit-transition: all 600ms ease-in-out 0.2s;
   -webkit-perspective: 1200;
   -webkit-perspective-origin-x: center;
   -webkit-perspective-origin-y: center;
   -webkit-backface-visibility: hidden;
-  -webkit-transform-origin: left top;
+  -webkit-transform-origin: center center;
   -webkit-transform-style: preserve-3d;
+  width: 520px;
+  height: 390px;
 }
 
-/* line 23, ../sass/folder.sass */
+/* line 30, ../sass/folder.sass */
 .row {
   position: absolute;
   top: 0px;
   left: 0px;
 }
 
-/* line 28, ../sass/folder.sass */
+/* line 35, ../sass/folder.sass */
 .row-0 {
-  top: 200px;
-}
-
-/* line 30, ../sass/folder.sass */
-.row-1down, .row-2down, .row-3down {
-  -webkit-transform: translate3d(0px, 200px, 0px);
-  -webkit-transform-origin: left top;
-}
-
-/* line 33, ../sass/folder.sass */
-.row-1up, .row-2up, .row-3up {
-  -webkit-transform: translate3d(0px, -200px, 0px);
-  -webkit-transform-origin: left bottom;
+  top: 130px;
 }
 
 /* line 37, ../sass/folder.sass */
-.level1, .level2, .level3, .level4, .level5, .level6, .level7 {
-  -webkit-transform: translate3d(200px, 0px, 0px);
+.row-1down, .row-2down, .row-3down {
+  -webkit-transform: translate3d(0px, 130px, 0px);
+  -webkit-transform-origin: left top;
 }
 
 /* line 40, ../sass/folder.sass */
+.row-1up, .row-2up, .row-3up {
+  -webkit-transform: translate3d(0px, -130px, 0px);
+  -webkit-transform-origin: left bottom;
+}
+
+/* line 44, ../sass/folder.sass */
+.level1, .level2, .level3, .level4, .level5, .level6, .level7 {
+  -webkit-transform: translate3d(130px, 0px, 0px);
+}
+
+/* line 47, ../sass/folder.sass */
 .box {
-  height: 200px;
+  height: 130px;
   position: relative;
   top: 0px;
   left: 0px;
   z-index: 0;
 }
 
-/* line 46, ../sass/folder.sass */
+/* line 53, ../sass/folder.sass */
 .content {
   position: absolute;
   top: 0px;
   left: 0px;
-  width: 200px;
-  height: 200px;
+  width: 130px;
+  height: 130px;
   overflow: hidden;
   -webkit-transition: all 600ms ease-in-out 0.2s;
   -webkit-backface-visibility: hidden;
@@ -78,7 +81,7 @@
   -webkit-transform-style: preserve-3d;
   border: 1px solid grey;
 }
-/* line 58, ../sass/folder.sass */
+/* line 65, ../sass/folder.sass */
 .content .inner {
   position: absolute;
   -webkit-backface-visibility: hidden;
@@ -86,62 +89,62 @@
   -webkit-transform-style: preserve-3d;
 }
 
-/* line 64, ../sass/folder.sass */
+/* line 71, ../sass/folder.sass */
 #box-0-0 > .content .inner {
   -webkit-transform: translate3d(0px, 0px, 0px);
 }
 
-/* line 67, ../sass/folder.sass */
+/* line 74, ../sass/folder.sass */
 #box-1-0 > .content .inner {
-  -webkit-transform: translate3d(-200px, 0px, 0px);
+  -webkit-transform: translate3d(-130px, 0px, 0px);
 }
 
-/* line 70, ../sass/folder.sass */
+/* line 77, ../sass/folder.sass */
 #box-2-0 > .content .inner {
-  -webkit-transform: translate3d(-400px, 0px, 0px);
+  -webkit-transform: translate3d(-260px, 0px, 0px);
 }
 
-/* line 73, ../sass/folder.sass */
+/* line 80, ../sass/folder.sass */
 #box-3-0 > .content .inner {
-  -webkit-transform: translate3d(-600px, 0px, 0px);
+  -webkit-transform: translate3d(-390px, 0px, 0px);
 }
 
-/* line 76, ../sass/folder.sass */
+/* line 83, ../sass/folder.sass */
 #box-0-1 > .content .inner {
-  -webkit-transform: translate3d(0px, -200px, 0px);
+  -webkit-transform: translate3d(0px, -130px, 0px);
 }
 
-/* line 79, ../sass/folder.sass */
+/* line 86, ../sass/folder.sass */
 #box-1-1 > .content .inner {
-  -webkit-transform: translate3d(-200px, -200px, 0px);
+  -webkit-transform: translate3d(-130px, -130px, 0px);
 }
 
-/* line 82, ../sass/folder.sass */
+/* line 89, ../sass/folder.sass */
 #box-2-1 > .content .inner {
-  -webkit-transform: translate3d(-400px, -200px, 0px);
+  -webkit-transform: translate3d(-260px, -130px, 0px);
 }
 
-/* line 85, ../sass/folder.sass */
+/* line 92, ../sass/folder.sass */
 #box-3-1 > .content .inner {
-  -webkit-transform: translate3d(-600px, -200px, 0px);
+  -webkit-transform: translate3d(-390px, -130px, 0px);
 }
 
-/* line 88, ../sass/folder.sass */
+/* line 95, ../sass/folder.sass */
 #box-0-2 > .content .inner {
-  -webkit-transform: translate3d(0px, -400px, 0px);
+  -webkit-transform: translate3d(0px, -260px, 0px);
 }
 
-/* line 91, ../sass/folder.sass */
+/* line 98, ../sass/folder.sass */
 #box-1-2 > .content .inner {
-  -webkit-transform: translate3d(-200px, -400px, 0px);
+  -webkit-transform: translate3d(-130px, -260px, 0px);
 }
 
-/* line 94, ../sass/folder.sass */
+/* line 101, ../sass/folder.sass */
 #box-2-2 > .content .inner {
-  -webkit-transform: translate3d(-400px, -400px, 0px);
+  -webkit-transform: translate3d(-260px, -260px, 0px);
 }
 
-/* line 97, ../sass/folder.sass */
+/* line 104, ../sass/folder.sass */
 #box-3-2 > .content .inner {
-  -webkit-transform: translate3d(-600px, -400px, 0px);
+  -webkit-transform: translate3d(-390px, -260px, 0px);
 }

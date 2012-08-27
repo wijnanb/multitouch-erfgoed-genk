@@ -19,6 +19,7 @@ class Block extends Backbone.Model
 		transition_scale: null
 		empty: true
 		opened: false
+		opened_region: null
 		orientation: NORMAL
 
 	initialize: () ->
@@ -28,6 +29,7 @@ class Block extends Backbone.Model
 		this.on "change:size", this.onSizeChanged, this
 		this.on "change:opened", this.onOpenedChanged, this
 		this.on "change:orientation", this.onOrientationChanged, this
+
 		
 	nearestPosition: () ->
 		pixel_position = 
@@ -73,9 +75,10 @@ class Block extends Backbone.Model
 	onOpenedChanged: () ->
 		console.log "opened: ", this.get "opened"
 
-	open: () ->
+	open: (region) ->
+		this.set "opened_region" : region
 		this.set "opened" : true
-
+		
 	close: () ->
 		this.set "opened" : false
 
@@ -99,16 +102,18 @@ class BlockCollection extends Backbone.Collection
 	contentReset: () ->
 		that = this
 		this.contentCollection.each (element,index,list) ->
-			attributes = 
+			attributes =
 				content: element
 				position:
 					x: index % config.grid_size.x
 					y: Math.floor index / config.grid_size.x
 
 			block = new Block(attributes)
+			blockView = new BlockView( model: block, collection: that ).render()
 			that.add block
 
-			blockView = new BlockView( model: block, collection: that ).render()
+			folder = new Folder( "content": element, "block": block );
+			folderView = new FolderView( model: folder ).render()
 		
 		this.trigger "contentReset"
 
@@ -245,6 +250,7 @@ class BlockView extends Backbone.View
 		this.model.on "change:transform_rotation", this.transform
 		this.model.on "change:transition_translation", this.transform
 		this.model.on "change:transition_scale", this.transform
+		this.model.on "change:opened", this.onOpenedChanged
 
 		this.collection = this.options.collection
 
@@ -368,7 +374,11 @@ class BlockView extends Backbone.View
 			this.model.set "transform_scale" : if small then 0.5 else null
 			this.$el.children(".inner").css "opacity", ""
 
-
+	onOpenedChanged: () ->
+		if this.model.get("opened")
+			this.$el.hide()
+		else
+			this.$el.show()
 
 
 window.Block = Block
